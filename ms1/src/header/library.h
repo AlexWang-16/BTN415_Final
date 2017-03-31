@@ -18,29 +18,29 @@ const int UP = 5;
 const int DOWN = 6;
 const int OPEN = 7;
 const int CLOSE = 8;
-const int HEADERSIZE = 3;
+const int HEADERSIZE = 6;
 
-struct CmdPacket {
-	Header Header;
-	char* Data;
-	char CRC;
+struct MotorBody {
+	char direction;
+	char duration;
 };
 
 struct Header {
-	char PktCount;
-	char Drive : 1;
-	char Status : 1;
-	char Sleep : 1;
-	char Arm : 1;
-	char Claw : 1;
-	char Ack : 1;
-	char : 2; //Padding
-	char Length;
+	unsigned int pktCount;
+	unsigned char drive : 1;
+	unsigned char status : 1;
+	unsigned char sleep : 1;
+	unsigned char arm : 1;
+	unsigned char claw : 1;
+	unsigned char ack : 1;
+	unsigned char : 2; //Padding
+	unsigned char length;
 };
 
-struct MotorBody {
-	char Direction;
-	char Duration;
+struct CmdPacket {
+	Header header;
+	char* data;
+	char CRC;
 };
 
 class PktDef {
@@ -49,17 +49,17 @@ class PktDef {
 public:
 	PktDef();
 	PktDef(char*);
-	void SetCmd(CmdType);
-	void SetBodyData(char*, int);
-	void SetPktCount(int);
-	CmdType GetCmd();
-	bool GetAck();
-	int GetLength();
-	char* GetBodyData();
-	int GetPktCount();
-	bool CheckCRC(char*, int);
-	void CalcCRC();
-	char* GenPacket();
+	void setCmd(CmdType);
+	void setBodyData(char*, int);
+	void setPktCount(int);
+	CmdType getCmd();
+	bool getAck();
+	int getLength();
+	char* getBodyData();
+	int getPktCount();
+	bool checkCRC(char*, int);
+	void calcCRC();
+	char* genPacket();
 
 }; 
 

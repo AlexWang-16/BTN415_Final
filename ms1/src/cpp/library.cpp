@@ -1,6 +1,7 @@
-#ifndef MS1_LIBRARY
+#ifndef MS1_LIBRARY_
 #define MS1_LIBRARY
-#include "library.h"
+#define _CRT_SECURE_NO_WARNINGS
+#include "../header/library.h"
 
 char message_buffer[128] = "";
 bool buffer_full = false;
@@ -108,6 +109,42 @@ void winsock_client::get_messages() {
 		}
 		std::cout << "Message received: " << incomming_message << std::endl;
 	}
+}
+
+PktDef::PktDef() {
+	cmdPacket.header.pktCount = (char) 0;
+	cmdPacket.header.drive = (char) 0;
+	cmdPacket.header.status = (char)0;
+	cmdPacket.header.sleep = (char)0;
+	cmdPacket.header.arm = (char)0;
+	cmdPacket.header.claw = (char)0;
+	cmdPacket.header.ack = (char)0;
+	cmdPacket.header.length = (char)0;
+	cmdPacket.data = nullptr;
+	cmdPacket.CRC = (char)0;
+}
+
+PktDef::PktDef(char* rawDataBuffer) {
+	//TODO - Constructor that takes Raw data Buffer
+	//Parse data and populate Header, Body, CRC contents
+	//Of PktDef object
+
+
+}
+
+void PktDef::setCmd(CmdType type) {
+	//TODO - Set the command packets command flags based on
+	//the type
+	
+}
+
+void PktDef::setBodyData(char* rawDataBuffer, int bufferByteSize) {
+	//TODO - Allocate memory for Body field and copy data
+	//from RawDataBuffer to the object's buffer
+}
+
+void PktDef::setPktCount(int countNumber) {
+	cmdPacket.header.pktCount = countNumber;
 }
 
 #endif

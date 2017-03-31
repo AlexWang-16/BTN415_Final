@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>
@@ -7,49 +8,60 @@ using namespace std;
 
 int main()
 {
-	MotorBody DriveCmd;
-	DriveCmd.Direction = FORWARD;
-	DriveCmd.Duration = 20;
+	Header test;
+	test.pktCount = 2;
+	test.drive = 0;
+	test.status = 1;
+	test.sleep = 0;
+	test.arm = 0;
+	test.claw = 0;
+	test.ack = 1;
+	test.length = 2;
 
-	PktDef TestPkt;
-	char *ptr;
+	std::cout << "Stop" << std::endl;
+	//MotorBody DriveCmd;
+	//DriveCmd.direction = FORWARD;
+	//DriveCmd.duration = 20;
 
-	//Testing the PktDef creation interface
-	TestPkt.SetCmd(DRIVE);
-	TestPkt.SetBodyData((char *)&DriveCmd, 2);
-	TestPkt.SetPktCount(1);
-	TestPkt.CalcCRC();
-	ptr = TestPkt.GenPacket();
+	//PktDef TestPkt;
+	//char *ptr;
 
-	cout << showbase
-		<< internal
-		<< setfill('0');
+	////Testing the PktDef creation interface
+	//TestPkt.setCmd(DRIVE);
+	//TestPkt.setBodyData((char *)&DriveCmd, 2);
+	//TestPkt.setPktCount(1);
+	//TestPkt.calcCRC();
+	//ptr = TestPkt.genPacket();
 
-	for (int x = 0; x < (int)TestPkt.GetLength(); x++)
-		cout << hex << setw(4) << (unsigned int)*(ptr++) << ", ";
+	//cout << showbase
+	//	<< internal
+	//	<< setfill('0');
 
-	cout << endl;
-	TestPkt.SetCmd(ACK);
-	TestPkt.CalcCRC();
-	ptr = TestPkt.GenPacket();
+	//for (int x = 0; x < (int)TestPkt.getLength(); x++)
+	//	cout << hex << setw(4) << (unsigned int)*(ptr++) << ", ";
 
-	for (int x = 0; x < (int)TestPkt.GetLength(); x++)
-		cout << hex << setw(4) << (unsigned int)*(ptr++) << ", ";
+	//cout << endl;
+	//TestPkt.setCmd(ACK);
+	//TestPkt.calcCRC();
+	//ptr = TestPkt.genPacket();
 
-	cout << endl << noshowbase << dec;
-	//Testing Rx Buffer interface
-	//You should create RAW data packets (like below) to test your overloaded constructor
-	char buffer[9] = { 0x02, 0x00, 0x00, 0x00, 0x02, 0x09, 0x11, 0x24, 0x08};
-	PktDef RxPkt(buffer);
-	cout << "CommandID:  " << RxPkt.GetCmd() << endl;
-	cout << "PktCount:   " << RxPkt.GetPktCount() << endl;
-	cout << "Pkt Length: " << RxPkt.GetLength() << endl;
-	cout << "Body Data: " << endl;
+	//for (int x = 0; x < (int)TestPkt.getLength(); x++)
+	//	cout << hex << setw(4) << (unsigned int)*(ptr++) << ", ";
 
-	ptr = RxPkt.GetBodyData();
-	cout << showbase << hex;
-	cout << "Byte 1 " << (int)*ptr++ << endl;
-	cout << "Byte 2 " << (int)*ptr << endl;
+	//cout << endl << noshowbase << dec;
+	////Testing Rx Buffer interface
+	////You should create RAW data packets (like below) to test your overloaded constructor
+	//char buffer[9] = { 0x02, 0x00, 0x00, 0x00, 0x02, 0x09, 0x11, 0x24, 0x08};
+	//PktDef RxPkt(buffer);
+	//cout << "CommandID:  " << RxPkt.getCmd() << endl;
+	//cout << "PktCount:   " << RxPkt.getPktCount() << endl;
+	//cout << "Pkt Length: " << RxPkt.getLength() << endl;
+	//cout << "Body Data: " << endl;
 
-	return 1;
+	//ptr = RxPkt.getBodyData();
+	//cout << showbase << hex;
+	//cout << "Byte 1 " << (int)*ptr++ << endl;
+	//cout << "Byte 2 " << (int)*ptr << endl;
+
+	//return 1;
 }
