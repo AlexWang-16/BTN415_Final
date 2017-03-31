@@ -142,11 +142,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\library.cpp" />
-    <ClCompile Include="..\..\..\Milestone1.cpp" />
+    <ClInclude Include="..\library.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\library.h" />
+    <ClCompile Include="..\library.cpp" />
+    <ClCompile Include="..\Milestone1.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
