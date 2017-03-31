@@ -18,6 +18,13 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\header\library.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\cpp\library.cpp" />
+    <ClCompile Include="..\src\cpp\Milestone1.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4CD42455-FA34-45FA-8ADA-2AE8692F8CBA}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -141,13 +148,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\library.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\library.cpp" />
-    <ClCompile Include="..\Milestone1.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

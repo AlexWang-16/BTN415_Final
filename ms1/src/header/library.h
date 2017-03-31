@@ -21,26 +21,26 @@ const int CLOSE = 8;
 const int HEADERSIZE = 3;
 
 struct CmdPacket {
-	Header header;
-	char* data;
-	char crc;
+	Header Header;
+	char* Data;
+	char CRC;
 };
 
 struct Header {
-	char pktCount;
-	char drive : 1;
-	char status : 1;
-	char sleep : 1;
-	char arm : 1;
-	char claw : 1;
-	char ack : 1;
+	char PktCount;
+	char Drive : 1;
+	char Status : 1;
+	char Sleep : 1;
+	char Arm : 1;
+	char Claw : 1;
+	char Ack : 1;
 	char : 2; //Padding
-	char length;
+	char Length;
 };
 
 struct MotorBody {
-	char direction;
-	char duration;
+	char Direction;
+	char Duration;
 };
 
 class PktDef {
@@ -49,7 +49,17 @@ class PktDef {
 public:
 	PktDef();
 	PktDef(char*);
-	void setCmd(CmdType);
+	void SetCmd(CmdType);
+	void SetBodyData(char*, int);
+	void SetPktCount(int);
+	CmdType GetCmd();
+	bool GetAck();
+	int GetLength();
+	char* GetBodyData();
+	int GetPktCount();
+	bool CheckCRC(char*, int);
+	void CalcCRC();
+	char* GenPacket();
 
 }; 
 

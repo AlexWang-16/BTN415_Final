@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>
-#include "library.h"
+#include "../header/library.h"
+
 using namespace std;
 
 int main()
