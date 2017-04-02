@@ -37,7 +37,7 @@ int main()
 	test.cmdPacket.CRC = 9;
 
 	//Create buffer to hold data
-	char* buffer = serialize(test);
+	char* buffer = serialize(test, 2);
 
 	//PktDef testRecv(buffer);
 

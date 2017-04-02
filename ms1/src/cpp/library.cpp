@@ -198,12 +198,12 @@ CmdType PktDef::getCmd() {
 }
 
 // Alex's temp functions. Remove after GM.
-char* serialize(PktDef src) {
-	//This method assumes the size of the PktDef to be 9 bytes
-	//MotorBody is expected to be 2 bytes in size ONLY
+char* serialize(PktDef src, int bodySize) {
+	//Note: Base size of PktDef without MotorBody is 7 bytes
+	//bodySize is in bytes
 
 	int bufferHeader = 0;	//Buffer header location tracker
-	int bufferSize = HEADERSIZE + (sizeof (unsigned char) * 2) + sizeof(char);
+	int bufferSize = HEADERSIZE + bodySize + sizeof(char);
 	char* rawBuffer = new char[bufferSize];
 	
 	char* ptr = reinterpret_cast<char*> (&src.cmdPacket.header);
@@ -214,8 +214,8 @@ char* serialize(PktDef src) {
 	if (src.cmdPacket.data != nullptr) {
 		//Motorbody is not empty
 		ptr = src.cmdPacket.data;
-		memcpy(rawBuffer + bufferHeader, ptr, sizeof(unsigned char) * 2);
-		bufferHeader += sizeof(unsigned char) * 2;
+		memcpy(rawBuffer + bufferHeader, ptr, bodySize);
+		bufferHeader += bodySize;
 	}
 
 	ptr = reinterpret_cast<char*>(&src.cmdPacket.CRC);

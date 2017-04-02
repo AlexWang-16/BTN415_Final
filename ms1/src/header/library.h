@@ -93,5 +93,5 @@ public:
 };
 
 // Alex's temp functions remove after GM
-char* serialize(PktDef src); 
+char* serialize(PktDef src, int bodySize); 
 #endif
