@@ -179,8 +179,28 @@ void PktDef::setPktCount(int countNumber) {
 	cmdPacket.header.pktCount = countNumber;
 }
 
+CmdType PktDef::getCmd() {
+	if (cmdPacket.header.drive) {
+		return DRIVE;
+	}
+	else if (cmdPacket.header.sleep) {
+		return SLEEP;
+	}
+	else if (cmdPacket.header.arm) {
+		return ARM;
+	}
+	else if (cmdPacket.header.claw) {
+		return CLAW;
+	}
+	else if (cmdPacket.header.ack) {
+		return ACK;
+	}
+}
+
 // Alex's temp functions. Remove after GM.
-char* writeData(PktDef src) {
+char* serialize(PktDef src) {
+	//This method assumes the size of the PktDef to be 9 bytes
+	//MotorBody is expected to be 2 bytes in size ONLY
 
 	int bufferHeader = 0;	//Buffer header location tracker
 	int bufferSize = HEADERSIZE + (sizeof (unsigned char) * 2) + sizeof(char);

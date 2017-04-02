@@ -24,27 +24,23 @@ int main()
 	test.cmdPacket.header.claw = 0;
 	test.cmdPacket.header.ack = 0;
 
-	//test.cmdPacket.header.length = 9;
-	//test.cmdPacket.data = reinterpret_cast<char*> (&driveData);
+	/*
+	Test setCmd() and getCmd()
+
+	test.setCmd(ARM);
+	std::cout << "Command retrieved: " << test.getCmd() << std::endl;
+	*/
+
+	test.cmdPacket.header.length = 9;
+	test.cmdPacket.data = reinterpret_cast<char*> (&driveData);
 	//test.cmdPacket.data = nullptr;
-	//test.cmdPacket.CRC = 9;
+	test.cmdPacket.CRC = 9;
 
 	//Create buffer to hold data
-	char* buffer = writeData(test);
+	char* buffer = serialize(test);
 
-	PktDef testRecv(buffer);
+	//PktDef testRecv(buffer);
 
-	/*Header test;
-	test.pktCount = 2;
-	test.drive = 0;
-	test.status = 1;
-	test.sleep = 0;
-	test.arm = 0;
-	test.claw = 0;
-	test.ack = 1;
-	test.length = 2;
-
-	std::cout << "Stop" << std::endl;*/
 	//MotorBody DriveCmd;
 	//DriveCmd.direction = FORWARD;
 	//DriveCmd.duration = 20;

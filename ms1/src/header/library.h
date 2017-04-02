@@ -53,7 +53,7 @@ public:
 	void setCmd(CmdType); // DONE
 	void setBodyData(char*, int);  // DONE
 	void setPktCount(int); //DONE
-	CmdType getCmd(); // Target 3 -
+	CmdType getCmd(); // DONE
 	bool getAck();
 	int getLength();
 	char* getBodyData();
@@ -92,5 +92,6 @@ public:
 	~winsock_client();
 };
 
-char* writeData(PktDef src);
+// Alex's temp functions remove after GM
+char* serialize(PktDef src); 
 #endif
