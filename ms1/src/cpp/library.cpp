@@ -125,26 +125,82 @@ PktDef::PktDef() {
 }
 
 PktDef::PktDef(char* rawDataBuffer) {
-	//TODO - Constructor that takes Raw data Buffer
+	//Constructor that takes Raw data Buffer
 	//Parse data and populate Header, Body, CRC contents
 	//Of PktDef object
+	char* ptr = rawDataBuffer;
+	
+	memcpy(&cmdPacket.header, ptr, HEADERSIZE);
 
+	ptr += HEADERSIZE;		//2 extra bytes comes from windows pad bytes
 
+	if (cmdPacket.header.length < 9) {		//Checking for Motorbody data
+		// No motorbody, initialize to nullptr
+		cmdPacket.data = nullptr;
+	}
+	else {
+		//Motorbody exists
+		char motorbodySize = cmdPacket.header.length - 7;
+		setBodyData(ptr, motorbodySize);
+		ptr += motorbodySize;	//Advance ptr past MotorBody
+	}
+
+	cmdPacket.CRC = *ptr;
 }
 
 void PktDef::setCmd(CmdType type) {
-	//TODO - Set the command packets command flags based on
-	//the type
+
+	switch (type) {
+	case DRIVE:
+		cmdPacket.header.drive = 1;
+		break;
+	case SLEEP:
+		cmdPacket.header.sleep = 1;
+		break;
+	case ARM:
+		cmdPacket.header.arm = 1;
+		break;
+	case CLAW:
+		cmdPacket.header.claw = 1;
+		break;
+	case ACK:
+		cmdPacket.header.ack = 1;
+		break;
+	}
 	
 }
 
 void PktDef::setBodyData(char* rawDataBuffer, int bufferByteSize) {
-	//TODO - Allocate memory for Body field and copy data
-	//from RawDataBuffer to the object's buffer
+	cmdPacket.data = new char[bufferByteSize];
+	memcpy(cmdPacket.data, rawDataBuffer, bufferByteSize);
 }
 
 void PktDef::setPktCount(int countNumber) {
 	cmdPacket.header.pktCount = countNumber;
 }
 
+// Alex's temp functions. Remove after GM.
+char* writeData(PktDef src) {
+
+	int bufferHeader = 0;	//Buffer header location tracker
+	int bufferSize = HEADERSIZE + (sizeof (unsigned char) * 2) + sizeof(char);
+	char* rawBuffer = new char[bufferSize];
+	
+	char* ptr = reinterpret_cast<char*> (&src.cmdPacket.header);
+	memcpy(rawBuffer, ptr, HEADERSIZE);
+
+	bufferHeader = HEADERSIZE;
+
+	if (src.cmdPacket.data != nullptr) {
+		//Motorbody is not empty
+		ptr = src.cmdPacket.data;
+		memcpy(rawBuffer + bufferHeader, ptr, sizeof(unsigned char) * 2);
+		bufferHeader += sizeof(unsigned char) * 2;
+	}
+
+	ptr = reinterpret_cast<char*>(&src.cmdPacket.CRC);
+	memcpy(rawBuffer + bufferHeader, ptr, sizeof(char));
+
+	return std::ref(rawBuffer);
+}
 #endif

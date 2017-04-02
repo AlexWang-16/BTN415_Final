@@ -27,14 +27,14 @@ struct MotorBody {
 
 struct Header {
 	unsigned int pktCount;
-	unsigned char drive : 1;
+	unsigned char drive : 1;	//This is the first bit (2^0)
 	unsigned char status : 1;
 	unsigned char sleep : 1;
 	unsigned char arm : 1;
 	unsigned char claw : 1;
 	unsigned char ack : 1;
 	unsigned char : 2; //Padding
-	unsigned char length;
+	unsigned char length;		//Num of bytes in packet
 };
 
 struct CmdPacket {
@@ -43,16 +43,17 @@ struct CmdPacket {
 	char CRC;
 };
 
-class PktDef {
+//TODO Change PktDef to "Class" instead of "Struct"
+struct PktDef {
 	CmdPacket cmdPacket;
 	char* rawBuffer;
 public:
-	PktDef();
-	PktDef(char*);
-	void setCmd(CmdType);
-	void setBodyData(char*, int);
-	void setPktCount(int);
-	CmdType getCmd();
+	PktDef();	//DONE
+	PktDef(char*); // DONE
+	void setCmd(CmdType); // DONE
+	void setBodyData(char*, int);  // DONE
+	void setPktCount(int); //DONE
+	CmdType getCmd(); // Target 3 -
 	bool getAck();
 	int getLength();
 	char* getBodyData();
@@ -61,6 +62,8 @@ public:
 	void calcCRC();
 	char* genPacket();
 
+	//Alex's temp functions for development only
+	//Remove after GM 
 }; 
 
 class winsock {
@@ -89,5 +92,5 @@ public:
 	~winsock_client();
 };
 
-
+char* writeData(PktDef src);
 #endif

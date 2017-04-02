@@ -8,7 +8,33 @@ using namespace std;
 
 int main()
 {
-	Header test;
+	
+	MotorBody driveData;
+	driveData.direction = FORWARD;
+	driveData.duration = 5;
+	
+	//Create and configure PktDef test
+	PktDef test;
+	test.cmdPacket.header.pktCount = 2;
+
+	test.cmdPacket.header.drive = 0;
+	test.cmdPacket.header.status = 0;
+	test.cmdPacket.header.sleep = 0;
+	test.cmdPacket.header.arm = 0;
+	test.cmdPacket.header.claw = 0;
+	test.cmdPacket.header.ack = 0;
+
+	//test.cmdPacket.header.length = 9;
+	//test.cmdPacket.data = reinterpret_cast<char*> (&driveData);
+	//test.cmdPacket.data = nullptr;
+	//test.cmdPacket.CRC = 9;
+
+	//Create buffer to hold data
+	char* buffer = writeData(test);
+
+	PktDef testRecv(buffer);
+
+	/*Header test;
 	test.pktCount = 2;
 	test.drive = 0;
 	test.status = 1;
@@ -18,7 +44,7 @@ int main()
 	test.ack = 1;
 	test.length = 2;
 
-	std::cout << "Stop" << std::endl;
+	std::cout << "Stop" << std::endl;*/
 	//MotorBody DriveCmd;
 	//DriveCmd.direction = FORWARD;
 	//DriveCmd.duration = 20;
