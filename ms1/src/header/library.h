@@ -33,7 +33,7 @@ struct Header {
 	unsigned char arm : 1;
 	unsigned char claw : 1;
 	unsigned char ack : 1;
-	unsigned char : 2; //Padding
+	unsigned char padding : 2;
 	unsigned char length;		//Num of bytes in packet
 };
 
@@ -43,27 +43,23 @@ struct CmdPacket {
 	char CRC;
 };
 
-//TODO Change PktDef to "Class" instead of "Struct"
-struct PktDef {
+class PktDef {
 	CmdPacket cmdPacket;
 	char* rawBuffer;
 public:
-	PktDef();	//DONE
-	PktDef(char*); // DONE
-	void setCmd(CmdType); // DONE
-	void setBodyData(char*, int);  // DONE
-	void setPktCount(int); //DONE
-	CmdType getCmd(); // DONE
-	bool getAck();
+	PktDef();
+	PktDef(char*); 
+	void setCmd(CmdType); 
+	void setBodyData(char*, int);  
+	void setPktCount(int); 
+	CmdType getCmd(); 
+	bool getAck();	
 	int getLength();
 	char* getBodyData();
 	int getPktCount();
-	bool checkCRC(char*, int);
-	void calcCRC();
-	char* genPacket();
-
-	//Alex's temp functions for development only
-	//Remove after GM 
+	bool checkCRC(char*, int);	
+	void calcCRC();		
+	char* genPacket(); 
 }; 
 
 class winsock {
@@ -92,6 +88,4 @@ public:
 	~winsock_client();
 };
 
-// Alex's temp functions remove after GM
-char* serialize(PktDef src, int bodySize); 
 #endif

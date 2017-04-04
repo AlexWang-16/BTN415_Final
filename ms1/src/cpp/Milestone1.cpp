@@ -14,32 +14,34 @@ int main()
 	driveData.duration = 5;
 	
 	//Create and configure PktDef test
-	PktDef test;
-	test.cmdPacket.header.pktCount = 2;
-
-	test.cmdPacket.header.drive = 0;
-	test.cmdPacket.header.status = 0;
-	test.cmdPacket.header.sleep = 0;
-	test.cmdPacket.header.arm = 0;
-	test.cmdPacket.header.claw = 0;
-	test.cmdPacket.header.ack = 0;
-
-	/*
-	Test setCmd() and getCmd()
-
-	test.setCmd(ARM);
-	std::cout << "Command retrieved: " << test.getCmd() << std::endl;
-	*/
-
-	test.cmdPacket.header.length = 9;
-	test.cmdPacket.data = reinterpret_cast<char*> (&driveData);
-	//test.cmdPacket.data = nullptr;
-	test.cmdPacket.CRC = 9;
+	PktDef sendPkt;
+	sendPkt.setPktCount(1);
+	sendPkt.setCmd(SLEEP);
+	sendPkt.setBodyData(reinterpret_cast<char*>(&driveData), 2);
+	
+	sendPkt.calcCRC();
 
 	//Create buffer to hold data
-	char* buffer = serialize(test, 2);
+	char* buffer = sendPkt.genPacket();
 
-	PktDef testRecv(buffer);
+	PktDef recvPkt(buffer);
+
+	recvPkt.calcCRC();
+
+	std::cout << "PktCount: " << recvPkt.getPktCount() << '\n';
+	std::cout << "Pkt Length: " << recvPkt.getLength() << '\n';
+	std::cout << "Ack status: " << recvPkt.getAck() << '\n';
+	std::cout << "Cmd received: " << recvPkt.getCmd() << '\n';
+	std::cout << "CRC Check status: " << recvPkt.checkCRC(buffer, 8) << '\n';
+
+	char* ptr = recvPkt.getBodyData();
+	//CRC check test code
+	//Note: CRC check covers HEADER and DATA only. 
+	//So it will be length of the struct - 1 byte for CRC data
+	//std::cout << "testRec pkt checkCRC() result: " 
+		//<< testRecv.checkCRC(buffer, test.cmdPacket.header.length - 1) << std::endl;;
+
+	//==== Professor's test code below ====
 
 	//MotorBody DriveCmd;
 	//DriveCmd.direction = FORWARD;

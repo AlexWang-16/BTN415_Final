@@ -119,15 +119,14 @@ PktDef::PktDef() {
 	cmdPacket.header.arm = (char)0;
 	cmdPacket.header.claw = (char)0;
 	cmdPacket.header.ack = (char)0;
-	cmdPacket.header.length = (char)0;
+	cmdPacket.header.length = HEADERSIZE + sizeof(cmdPacket.CRC);
 	cmdPacket.data = nullptr;
 	cmdPacket.CRC = (char)0;
 }
 
 PktDef::PktDef(char* rawDataBuffer) {
 	//Constructor that takes Raw data Buffer
-	//Parse data and populate Header, Body, CRC contents
-	//Of PktDef object
+	//Reconstruct PktDef via data from rawDataBuffer
 	char* ptr = rawDataBuffer;
 	
 	memcpy(&cmdPacket.header, ptr, HEADERSIZE);
@@ -174,6 +173,8 @@ void PktDef::setCmd(CmdType type) {
 void PktDef::setBodyData(char* rawDataBuffer, int bufferByteSize) {
 	cmdPacket.data = new char[bufferByteSize];
 	memcpy(cmdPacket.data, rawDataBuffer, bufferByteSize);
+
+	cmdPacket.header.length = HEADERSIZE + sizeof(cmdPacket.CRC) + bufferByteSize;
 }
 
 void PktDef::setPktCount(int countNumber) {
@@ -195,29 +196,85 @@ CmdType PktDef::getCmd() {
 	}
 }
 
-// Alex's temp functions. Remove after GM.
-char* serialize(PktDef src, int bodySize) {
-	//Note: Base size of PktDef without MotorBody is 7 bytes
-	//bodySize is in bytes
+bool PktDef::getAck() {
+	return cmdPacket.header.ack;
+}
 
-	int bufferHeader = 0;	//Buffer header location tracker
-	int bufferSize = HEADERSIZE + bodySize + sizeof(src.cmdPacket.CRC);
-	char* rawBuffer = new char[bufferSize];
+int PktDef::getLength() {
+	return cmdPacket.header.length;
+}
+
+char* PktDef::getBodyData() {
+	return cmdPacket.data;
+}
+
+int PktDef::getPktCount() {
+	return cmdPacket.header.pktCount;
+}
+
+bool PktDef::checkCRC(char* ptr, int bufferSize) {
+	int crc = 0;
+	for (int i = 0; i < bufferSize; i++) {
+		for (int j = 0; j < 8; j++) {		//iterate through 8 bits
+			if ((*ptr >> j) & 1) {
+				crc++;
+			}
+		}
+		ptr++;
+	}
+	return crc == cmdPacket.CRC;
+}
+
+void PktDef::calcCRC() {
+	//Calculates the CRC on the fly and saves it to the current object
+	cmdPacket.CRC = 0;
+	char* ptr = reinterpret_cast<char*>(&cmdPacket.header);
+
+	for (int i = 0; i < HEADERSIZE; i++) {
+		for (int j = 0; j < 8; j++) { //Loop through 8 bits
+			if ((*ptr >> j) & 1) {
+				cmdPacket.CRC++;
+			}
+		}
+		ptr++;
+	}
+
+	if (cmdPacket.data != nullptr) {
+		ptr = cmdPacket.data;
+		int bodySize = cmdPacket.header.length - HEADERSIZE - sizeof(cmdPacket.CRC);
+
+		for (int i = 0; i < bodySize; i++) {
+			for (int j = 0; j < 8; j++) { //Loop through 8 bits
+				if ((*ptr >> j) & 1) {
+					cmdPacket.CRC++;
+				}
+			}
+			ptr++;
+		}
+	}
+}
+
+char* PktDef::genPacket(){
+	// Creates a RawBuffer in the heap and serialize data
+	//Return address to RawBuffer
 	
-	char* ptr = reinterpret_cast<char*> (&src.cmdPacket.header);
+	int bufferHeader = 0;	//Buffer header location tracker
+	int bodySize = this->getLength() - HEADERSIZE - sizeof(cmdPacket.CRC);
+	char* rawBuffer = new char[cmdPacket.header.length];
+
+	char* ptr = reinterpret_cast<char*> (&cmdPacket.header);
 	memcpy(rawBuffer, ptr, HEADERSIZE);
 
 	bufferHeader = HEADERSIZE;
 
-	if (src.cmdPacket.data != nullptr) {
-		//Motorbody is not empty
-		ptr = src.cmdPacket.data;
+	if (cmdPacket.data != nullptr) {		//Motorbody is not empty
+		ptr = cmdPacket.data;
 		memcpy(rawBuffer + bufferHeader, ptr, bodySize);
 		bufferHeader += bodySize;
 	}
 
-	ptr = reinterpret_cast<char*>(&src.cmdPacket.CRC);
-	memcpy(rawBuffer + bufferHeader, ptr, sizeof(char));
+	ptr = reinterpret_cast<char*>(&cmdPacket.CRC);
+	memcpy(rawBuffer + bufferHeader, ptr, sizeof(cmdPacket.CRC));
 
 	return std::ref(rawBuffer);
 }
