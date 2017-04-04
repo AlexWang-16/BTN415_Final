@@ -39,7 +39,7 @@ int main()
 	//Create buffer to hold data
 	char* buffer = serialize(test, 2);
 
-	//PktDef testRecv(buffer);
+	PktDef testRecv(buffer);
 
 	//MotorBody DriveCmd;
 	//DriveCmd.direction = FORWARD;

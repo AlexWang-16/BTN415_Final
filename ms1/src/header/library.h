@@ -21,14 +21,14 @@ const int CLOSE = 8;
 const int HEADERSIZE = 6;
 
 struct MotorBody {
-	char direction;
-	char duration;
+	unsigned char direction;
+	unsigned char duration;
 };
 
 struct Header {
 	unsigned int pktCount;
 	unsigned char drive : 1;	//This is the first bit (2^0)
-	unsigned char status : 1;
+	unsigned char status : 1;	//Used to see if robot has recieved cmd
 	unsigned char sleep : 1;
 	unsigned char arm : 1;
 	unsigned char claw : 1;

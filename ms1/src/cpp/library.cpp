@@ -140,7 +140,10 @@ PktDef::PktDef(char* rawDataBuffer) {
 	}
 	else {
 		//Motorbody exists
-		char motorbodySize = cmdPacket.header.length - 7;
+		char motorbodySize = cmdPacket.header.length
+							- HEADERSIZE
+							- sizeof(cmdPacket.CRC);
+
 		setBodyData(ptr, motorbodySize);
 		ptr += motorbodySize;	//Advance ptr past MotorBody
 	}
@@ -163,10 +166,8 @@ void PktDef::setCmd(CmdType type) {
 	case CLAW:
 		cmdPacket.header.claw = 1;
 		break;
-	case ACK:
-		cmdPacket.header.ack = 1;
-		break;
 	}
+
 	
 }
 
@@ -192,9 +193,6 @@ CmdType PktDef::getCmd() {
 	else if (cmdPacket.header.claw) {
 		return CLAW;
 	}
-	else if (cmdPacket.header.ack) {
-		return ACK;
-	}
 }
 
 // Alex's temp functions. Remove after GM.
@@ -203,7 +201,7 @@ char* serialize(PktDef src, int bodySize) {
 	//bodySize is in bytes
 
 	int bufferHeader = 0;	//Buffer header location tracker
-	int bufferSize = HEADERSIZE + bodySize + sizeof(char);
+	int bufferSize = HEADERSIZE + bodySize + sizeof(src.cmdPacket.CRC);
 	char* rawBuffer = new char[bufferSize];
 	
 	char* ptr = reinterpret_cast<char*> (&src.cmdPacket.header);
