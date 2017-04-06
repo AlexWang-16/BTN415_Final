@@ -101,7 +101,7 @@ int MySocket::GetPort()
 
 SocketType MySocket::GetType()
 {
-	return SocketType();
+	return this->mySocket;
 }
 
 void MySocket::SetType(SocketType sockType)
@@ -131,7 +131,7 @@ void MySocket::start_DLLS()
 SOCKET MySocket::initialize_tcp_socket()
 {
 	SOCKET LocalSocket;
-	LocalSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	LocalSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (LocalSocket == INVALID_SOCKET) {
 		WSACleanup();
 		std::cout << "Could not initialize socket" << std::endl;
@@ -157,34 +157,33 @@ SOCKET MySocket::initialize_udp_socket()
 void MySocket::bind_socket()
 {
 	if (this->GetType() == SERVER) {
-	if (this->GetConnectionType() == UDP) {
-		struct sockaddr_in SvrAddr;
-		SvrAddr.sin_family = AF_INET;
-		SvrAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-		SvrAddr.sin_port = htons(27000);
-		if (bind(WelcomeSocket, (struct sockaddr *)&SvrAddr,
-			sizeof(SvrAddr)) == SOCKET_ERROR)
-		{
-			closesocket(WelcomeSocket);
-			WSACleanup();
-			return;
+		if (this->GetConnectionType() == UDP) {
+			struct sockaddr_in SvrAddr;
+			SvrAddr.sin_family = AF_INET;
+			SvrAddr.sin_addr.s_addr = inet_addr(this->IPAddr.c_str());
+			SvrAddr.sin_port = htons(this->GetPort());
+			if (bind(WelcomeSocket, (struct sockaddr *)&SvrAddr,
+				sizeof(SvrAddr)) == SOCKET_ERROR)
+			{
+				closesocket(WelcomeSocket);
+				WSACleanup();
+				return;
+			}
 		}
-	}
-	else if (this->GetConnectionType() == TCP) {
-		struct sockaddr_in SvrAddr;
-		SvrAddr.sin_family = AF_INET; //Address family type internet
-		SvrAddr.sin_port = htons(this->GetPort()); //port (host to network conversion)
-		SvrAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str()); //IP address
-		if ((bind(this->WelcomeSocket, (struct sockaddr *)&SvrAddr, sizeof(SvrAddr))) == SOCKET_ERROR) {
-			closesocket(this->WelcomeSocket);
-			WSACleanup();
-			std::cout << "Could not bind to the socket" << std::endl;
-			std::cin.get();
-			exit(0);
+		else if (this->GetConnectionType() == TCP) {
+			struct sockaddr_in SvrAddr;
+			SvrAddr.sin_family = AF_INET; //Address family type internet
+			SvrAddr.sin_port = htons(this->GetPort()); //port (host to network conversion)
+			SvrAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str()); //IP address
+			if ((bind(this->WelcomeSocket, (struct sockaddr *)&SvrAddr, sizeof(SvrAddr))) == SOCKET_ERROR) {
+				closesocket(this->WelcomeSocket);
+				WSACleanup();
+				std::cout << "Could not bind to the socket" << std::endl;
+				std::cin.get();
+				exit(0);
+			}
 		}
-	}
-
-} 
+	} 
 	
 
 
