@@ -70,11 +70,12 @@ void MySocket::DisconnectTCP()
 
 void MySocket::SendData(const char *, int)
 {
-
+	//TODO
 }
 
 int MySocket::GetData(char *)
 {
+	//TODO
 	return 0;
 }
 

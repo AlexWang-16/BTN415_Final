@@ -23,8 +23,6 @@
     <ClInclude Include="..\src\header\MySocket.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\cpp\library.cpp" />
-    <ClCompile Include="..\src\cpp\Milestone1.cpp" />
     <ClCompile Include="..\src\cpp\MySocket.cpp" />
     <ClCompile Include="..\src\cpp\Server.cpp" />
   </ItemGroup>

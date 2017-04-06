@@ -4,11 +4,20 @@
     <ClCompile Include="..\src\cpp\Client.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\cpp\library.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\cpp\MySocket.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cpp\Milestone1.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\header\library.h">
+      <Filter>Header</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\header\MySocket.h">
       <Filter>Header</Filter>
     </ClInclude>
