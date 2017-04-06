@@ -80,22 +80,22 @@ int MySocket::GetData(char *)
 
 std::string MySocket::GetIPAddr()
 {
-	return std::string();
+	return this->IPAddr;
 }
 
 void MySocket::SetIPAddr(std::string ipAdd)
 {
-	IPAddr = ipAdd;
+	this->IPAddr = ipAdd;
 }
 
 void MySocket::SetPort(int p)
 {
-	port = p;
+	this->port = p;
 }
 
 int MySocket::GetPort()
 {
-	return port;
+	return this->port;
 }
 
 SocketType MySocket::GetType()
@@ -105,12 +105,12 @@ SocketType MySocket::GetType()
 
 void MySocket::SetType(SocketType sockType)
 {
-	mySocket = sockType;
+	this->mySocket = sockType;
 }
 
 ConnectionType MySocket::GetConnectionType()
 {
-	return ConnectionType();
+	return this->connectionType;
 }
 
 void MySocket::SetConnectionType(ConnectionType connType)
@@ -130,7 +130,7 @@ void MySocket::start_DLLS()
 SOCKET MySocket::initialize_tcp_socket()
 {
 	SOCKET LocalSocket;
-	LocalSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	LocalSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (LocalSocket == INVALID_SOCKET) {
 		WSACleanup();
 		std::cout << "Could not initialize socket" << std::endl;
@@ -159,12 +159,12 @@ void MySocket::bind_socket()
 	if (this->GetConnectionType() == UDP) {
 		struct sockaddr_in SvrAddr;
 		SvrAddr.sin_family = AF_INET;
-		SvrAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-		SvrAddr.sin_port = htons(27000);
-		if (bind(WelcomeSocket, (struct sockaddr *)&SvrAddr,
+		SvrAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str());
+		SvrAddr.sin_port = htons(this->port);
+		if (bind(this->WelcomeSocket, (struct sockaddr *)&SvrAddr,
 			sizeof(SvrAddr)) == SOCKET_ERROR)
 		{
-			closesocket(WelcomeSocket);
+			closesocket(this->WelcomeSocket);
 			WSACleanup();
 			return;
 		}

@@ -162,10 +162,10 @@ void MySocket::bind_socket()
 			SvrAddr.sin_family = AF_INET;
 			SvrAddr.sin_addr.s_addr = inet_addr(this->IPAddr.c_str());
 			SvrAddr.sin_port = htons(this->GetPort());
-			if (bind(WelcomeSocket, (struct sockaddr *)&SvrAddr,
+			if (bind(this->WelcomeSocket, (struct sockaddr *)&SvrAddr,
 				sizeof(SvrAddr)) == SOCKET_ERROR)
 			{
-				closesocket(WelcomeSocket);
+				closesocket(this->WelcomeSocket);
 				WSACleanup();
 				return;
 			}
