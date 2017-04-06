@@ -20,10 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\header\library.h" />
+    <ClInclude Include="..\src\header\MySocket.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\cpp\Client.cpp" />
     <ClCompile Include="..\src\cpp\library.cpp" />
     <ClCompile Include="..\src\cpp\Milestone1.cpp" />
+    <ClCompile Include="..\src\cpp\MySocket.cpp" />
+    <ClCompile Include="..\src\cpp\Server.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4CD42455-FA34-45FA-8ADA-2AE8692F8CBA}</ProjectGuid>
