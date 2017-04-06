@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\header\library.h" />
     <ClInclude Include="..\src\header\MySocket.h" />
   </ItemGroup>
   <ItemGroup>

@@ -9,9 +9,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\header\library.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\header\MySocket.h">
       <Filter>Header</Filter>
     </ClInclude>
