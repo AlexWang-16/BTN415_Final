@@ -81,22 +81,22 @@ int MySocket::GetData(char *)
 
 std::string MySocket::GetIPAddr()
 {
-	return std::string();
+	return this->IPAddr;
 }
 
 void MySocket::SetIPAddr(std::string ipAdd)
 {
-	IPAddr = ipAdd;
+	this->IPAddr = ipAdd;
 }
 
 void MySocket::SetPort(int p)
 {
-	port = p;
+	this->port = p;
 }
 
 int MySocket::GetPort()
 {
-	return port;
+	return this->port;
 }
 
 SocketType MySocket::GetType()
@@ -106,17 +106,17 @@ SocketType MySocket::GetType()
 
 void MySocket::SetType(SocketType sockType)
 {
-	mySocket = sockType;
+	this->mySocket = sockType;
 }
 
 ConnectionType MySocket::GetConnectionType()
 {
-	return ConnectionType();
+	return this->connectionType;
 }
 
 void MySocket::SetConnectionType(ConnectionType connType)
 {
-	connectionType = connType;
+	this->connectionType = connType;
 }
 
 void MySocket::start_DLLS()
