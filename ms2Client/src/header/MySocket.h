@@ -62,15 +62,7 @@ public:
 
 	void send_message(char * tx_buffer);
 
-
-
 	~MySocket();
-
-
-
-
-
-
 };
 
 

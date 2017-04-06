@@ -1,4 +1,4 @@
-#include "MySocket.h"
+#include "../header/MySocket.h"
 
 MySocket::MySocket(SocketType sockType, std::string ipAddr, unsigned int port, ConnectionType connectType, unsigned int size) {
 	this->version_num1 = 2;
