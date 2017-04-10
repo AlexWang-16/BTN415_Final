@@ -1,13 +1,15 @@
 #ifndef MYSOCKET_H
 #define MYSOCKET_H
+#define NOMINMAX
 
 #include <windows.networking.sockets.h>
 #pragma comment(lib, "Ws2_32.lib")
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <limits>
 
-enum  SocketType {CLIENT, SERVER};
+enum  SocketType { CLIENT, SERVER };
 enum  ConnectionType { TCP, UDP };
 const int DEFAULT_SIZE = 128;
 
@@ -29,7 +31,7 @@ protected:
 
 	bool bTCPConnect = false;
 
-	int MAxSize;
+	int MaxSize;
 
 public:
 	MySocket(SocketType, std::string, unsigned int, ConnectionType, unsigned int);
@@ -44,33 +46,15 @@ public:
 	int GetPort();
 	SocketType GetType();
 	void SetType(SocketType);
-
 	ConnectionType GetConnectionType();
-
 	void SetConnectionType(ConnectionType connType);
-
 	void start_DLLS();
 	SOCKET initialize_tcp_socket();
 	SOCKET initialize_udp_socket();
 	void bind_socket();
 	void listen_socket();
 	void accept_connection();
-
-	void ConnectToTCPServer();
-
-	char * receive_message();
-
-	void send_message(char * tx_buffer);
-
-
-
 	~MySocket();
-
-
-
-
-
-
 };
 
 
