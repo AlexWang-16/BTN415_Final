@@ -59,7 +59,7 @@ void MySocket::ConnectTCP()
 
 void MySocket::DisconnectTCP()
 {
-	if (this->GetType == SERVER) {
+	if (this->GetType() == SERVER) {
 		closesocket(this->ConnectionSocket);
 		closesocket(this->WelcomeSocket);
 		WSACleanup();
