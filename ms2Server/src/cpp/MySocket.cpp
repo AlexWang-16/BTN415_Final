@@ -36,30 +36,9 @@ MySocket::MySocket(SocketType sockType, std::string ipAddr, unsigned int port, C
 
 void MySocket::ConnectTCP()
 {
-	//if (this)
 	this->accept_connection();
 
 }
-
-
-/*
-bool tcp_node::three_way_handshake(tcp_node *server, channel * wireless){
-	send_signal(server, this, wireless, "SYN");
-	send_signal(this, server, wireless, "SYN/ACK");
-	send_signal(server, this, wireless, "ACK");
-	return true;
-}
-
-bool tcp_node::four_way_handshake(tcp_node *server, channel * wireless){
-	send_signal(server, this, wireless, "FIN");
-	send_signal(this, server, wireless, "ACK/FIN");
-	send_signal(this, server, wireless, "FIN");
-	send_signal(server, this, wireless, "ACK/FIN");
-return true;
-}
-
-*/
-
 
 void MySocket::DisconnectTCP()
 {
