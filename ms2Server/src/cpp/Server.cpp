@@ -7,7 +7,7 @@ int main()
 
 	char buff[100];
 
-	int RxSize = ServerSocket.GetData(buff);
+int RxSize = ServerSocket.GetData(buff);
 
 	std::cout << "Msg = " << buff << ", Bytes = " << RxSize << std::endl;
 

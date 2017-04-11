@@ -29,32 +29,40 @@ protected:
 	SocketType mySocket;
 	ConnectionType connectionType;
 
-	bool bTCPConnect = false;
+	bool bTCPConnect = false;		//True if connection is established
 
 	int MaxSize;
 
 public:
+	//constructor and destructor
 	MySocket(SocketType, std::string, unsigned int, ConnectionType, unsigned int);
+	~MySocket();
 
-	void ConnectTCP();
-	void DisconnectTCP();
-	void SendData(const char*, int);
-	int GetData(char*);
+	//getter functions
+	int GetPort();
 	std::string GetIPAddr();
+	SocketType GetType();
+	ConnectionType GetConnectionType();
+
+	//setter functions
 	void SetIPAddr(std::string);
 	void SetPort(int);
-	int GetPort();
-	SocketType GetType();
 	void SetType(SocketType);
-	ConnectionType GetConnectionType();
-	void SetConnectionType(ConnectionType connType);
+
+	//socket functions
 	void start_DLLS();
 	SOCKET initialize_tcp_socket();
 	SOCKET initialize_udp_socket();
 	void bind_socket();
 	void listen_socket();
 	void accept_connection();
-	~MySocket();
+
+	//connection and transmission functions
+	void ConnectTCP();
+	void DisconnectTCP();
+	int GetData(char*);
+	void SendData(const char*, int);
+
 };
 
 

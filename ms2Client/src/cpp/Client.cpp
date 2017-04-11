@@ -9,6 +9,7 @@ int main()
 	std::string Pkt = "I love BTN415";
 
 	ClientSocket.ConnectTCP();
+	
 	ClientSocket.SendData(Pkt.c_str(), strlen(Pkt.c_str()));
 
 	char buff[100];
