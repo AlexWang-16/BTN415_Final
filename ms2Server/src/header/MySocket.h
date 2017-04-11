@@ -35,7 +35,7 @@ protected:
 
 public:
 	//constructor and destructor
-	MySocket(SocketType, std::string, unsigned int, ConnectionType, unsigned int);
+	MySocket(SocketType socketType, std::string, unsigned int, ConnectionType, unsigned int);
 	~MySocket();
 
 	//getter functions
@@ -45,9 +45,9 @@ public:
 	ConnectionType GetConnectionType();
 	
 	//setter functions
-	void SetIPAddr(std::string);
-	void SetPort(int);
-	void SetType(SocketType);
+	void SetIPAddr(std::string ipAddress);
+	void SetPort(int portNumber);
+	void SetType(SocketType socketType);
 
 	//socket functions
 	void start_DLLS();
@@ -60,8 +60,8 @@ public:
 	//connection and transmission functions
 	void ConnectTCP();
 	void DisconnectTCP();
-	int GetData(char*);
-	void SendData(const char*, int);
+	int GetData(char* recvBuffer);
+	void SendData(const char* data, int dataSize);
 
 };
 

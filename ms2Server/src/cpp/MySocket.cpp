@@ -1,18 +1,19 @@
 #include "../header/MySocket.h"
 
-MySocket::MySocket(SocketType sockType, std::string ipAddr, unsigned int port, ConnectionType connectType, unsigned int size) {
+MySocket::MySocket(SocketType socketType, std::string ipAddress, unsigned int portNumber, 
+  ConnectionType connectionType, unsigned int bufferSize) {
 	this->version_num1 = 2;
 	this->version_num2 = 2;
 	this->start_DLLS();
 
-	SetType(sockType);
-	SetIPAddr(ipAddr);
+	SetType(socketType);
+	SetIPAddr(ipAddress);
 	SetPort(port);
-	connectionType = connectType;
+	this->connectionType = connectionType;
 
-	if (0 < size && size <= std::numeric_limits<int>::max()) {
-		Buffer = new char[size];
-		this->MaxSize = size;
+	if (0 < bufferSize && bufferSize <= std::numeric_limits<int>::max()) {
+		Buffer = new char[bufferSize];
+		this->MaxSize = bufferSize;
 	}
 	else {
 		Buffer = new char[DEFAULT_SIZE];
@@ -109,10 +110,11 @@ void MySocket::SendData(const char* data, int dataSize)
 	}
 }
 
-int MySocket::GetData(char * data)
+//Receives data, stores data into char* data and returns number of bytes stored
+int MySocket::GetData(char * recvBuffer)
 {
 	if (this->connectionType == TCP) {
-		recv(this->ConnectionSocket, data, this->MaxSize, 0);
+		recv(this->ConnectionSocket, recvBuffer, this->MaxSize, 0);
 	}
 	else if (this->connectionType == UDP) {
 		if (this->GetType() == CLIENT) {
@@ -121,7 +123,7 @@ int MySocket::GetData(char * data)
 			this->SvrAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str());
 			int addr_len = sizeof(SvrAddr);
 
-			recvfrom(this->ConnectionSocket, data, this->MaxSize, 0, (struct sockaddr *) &SvrAddr, &addr_len);
+			recvfrom(this->ConnectionSocket, recvBuffer, this->MaxSize, 0, (struct sockaddr *) &SvrAddr, &addr_len);
 
 			//Close the conection and free client socket resource
 			closesocket(this->ConnectionSocket);
@@ -133,7 +135,7 @@ int MySocket::GetData(char * data)
 			CltAddr.sin_port = htons(this->port);
 			CltAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str());
 			int addr_len = sizeof(CltAddr);
-			recvfrom(this->WelcomeSocket, data, this->MaxSize, 0, (struct sockaddr *) &CltAddr, &addr_len);
+			recvfrom(this->WelcomeSocket, recvBuffer, this->MaxSize, 0, (struct sockaddr *) &CltAddr, &addr_len);
 		}
 	}
 	return this->MaxSize;
@@ -144,10 +146,10 @@ std::string MySocket::GetIPAddr()
 	return this->IPAddr;
 }
 
-void MySocket::SetIPAddr(std::string ipAdd)
+void MySocket::SetIPAddr(std::string ipAddress)
 {
 	if (!this->bTCPConnect) {
-		this->IPAddr = ipAdd;
+		this->IPAddr = ipAddress;
 	}
 	else {
 		if (this->GetType() == CLIENT) {
@@ -159,10 +161,10 @@ void MySocket::SetIPAddr(std::string ipAdd)
 	}
 }
 
-void MySocket::SetPort(int p)
+void MySocket::SetPort(int portNumber)
 {
 	if (!this->bTCPConnect) {
-		this->port = p;
+		this->port = portNumber;
 	}
 	else {
 		if (this->GetType() == CLIENT) {
@@ -184,9 +186,9 @@ SocketType MySocket::GetType()
 	return this->mySocket;
 }
 
-void MySocket::SetType(SocketType sockType)
+void MySocket::SetType(SocketType socketType)
 {
-	this->mySocket = sockType;
+	this->mySocket = socketType;
 }
 
 ConnectionType MySocket::GetConnectionType()

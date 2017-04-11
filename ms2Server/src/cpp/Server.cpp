@@ -1,9 +1,8 @@
-#include <iostream>
 #include "../header/MySocket.h"
 
 int main()
 {
-	MySocket ServerSocket(SocketType::SERVER, "127.0.0.1", 5000, ConnectionType::TCP, 100);
+	MySocket ServerSocket(SocketType::SERVER, "127.0.0.1", 5000, ConnectionType::UDP, 100);
 
 	char buff[100];
 
@@ -15,7 +14,7 @@ int RxSize = ServerSocket.GetData(buff);
 
 	ServerSocket.SendData(Pkt.c_str(), strlen(Pkt.c_str()));
 	
-	ServerSocket.DisconnectTCP();
+	//ServerSocket.DisconnectTCP();
 
 	return 1;
 }
