@@ -9,7 +9,7 @@
 #include <chrono>
 #include <vector>
 
-enum CmdType {DRIVE, SLEEP, ARM, CLAW, ACK};
+enum CmdType {DRIVE, STATUS, SLEEP, ARM, CLAW, ACK};
 const int FORWARD = 1;
 const int BACKWARD = 2;
 const int RIGHT = 3;
@@ -47,17 +47,25 @@ class PktDef {
 	CmdPacket cmdPacket;
 	char* rawBuffer;
 public:
+  //Constructors
 	PktDef();
-	PktDef(char*); 
+	PktDef(char* rawDataBuffer);
+
+  //Setters
 	void setCmd(CmdType); 
-	void setBodyData(char*, int);  
+	void setBodyData(char* rawDataBuffer, int bufferByteSize);
 	void setPktCount(int); 
-	CmdType getCmd(); 
-	bool getAck();	
-	int getLength();
+
+  //Getters
+  int getPktCount();
+  CmdType getCmd(); 
+	bool getAck();
+	int getLength();  //Returns size of pkt in bytes
 	char* getBodyData();
-	int getPktCount();
-	bool checkCRC(char*, int);	
+	
+
+  //Validation and generation
+	bool checkCRC(char* ptr, int bufferSize);
 	void calcCRC();		
 	char* genPacket(); 
 }; 

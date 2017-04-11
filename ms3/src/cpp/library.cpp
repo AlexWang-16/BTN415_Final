@@ -146,16 +146,17 @@ PktDef::PktDef(char* rawDataBuffer) {
 		setBodyData(ptr, motorbodySize);
 		ptr += motorbodySize;	//Advance ptr past MotorBody
 	}
-
 	cmdPacket.CRC = *ptr;
 }
 
 void PktDef::setCmd(CmdType type) {
-
 	switch (type) {
 	case DRIVE:
 		cmdPacket.header.drive = 1;
 		break;
+  case STATUS:
+    cmdPacket.header.status = 1;
+    break;
 	case SLEEP:
 		cmdPacket.header.sleep = 1;
 		break;
@@ -166,8 +167,6 @@ void PktDef::setCmd(CmdType type) {
 		cmdPacket.header.claw = 1;
 		break;
 	}
-
-	
 }
 
 void PktDef::setBodyData(char* rawDataBuffer, int bufferByteSize) {
@@ -185,6 +184,9 @@ CmdType PktDef::getCmd() {
 	if (cmdPacket.header.drive) {
 		return DRIVE;
 	}
+  else if (cmdPacket.header.status) {
+    return STATUS;
+  }
 	else if (cmdPacket.header.sleep) {
 		return SLEEP;
 	}
@@ -255,7 +257,7 @@ void PktDef::calcCRC() {
 }
 
 char* PktDef::genPacket(){
-	// Creates a RawBuffer in the heap and serialize data
+	//Creates a RawBuffer in the heap and serialize data
 	//Return address to RawBuffer
 	
 	int bufferHeader = 0;	//Buffer header location tracker

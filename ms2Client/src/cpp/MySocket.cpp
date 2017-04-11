@@ -114,9 +114,11 @@ void MySocket::SendData(const char* data, int dataSize)
 int MySocket::GetData(char * recvBuffer)
 {
   if (this->connectionType == TCP) {
+    memset(recvBuffer, 0, this->MaxSize);
     recv(this->ConnectionSocket, recvBuffer, this->MaxSize, 0);
   }
   else if (this->connectionType == UDP) {
+    memset(recvBuffer, 0, this->MaxSize);
     if (this->GetType() == CLIENT) {
       this->SvrAddr.sin_family = AF_INET;
       this->SvrAddr.sin_port = htons(this->port);
