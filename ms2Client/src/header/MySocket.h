@@ -35,7 +35,9 @@ protected:
 
 public:
   //constructor and destructor
-  MySocket(SocketType socketType, std::string, unsigned int, ConnectionType, unsigned int);
+  MySocket(SocketType socketType, std::string ipAddress,
+    unsigned int portNumber, ConnectionType connectionType,
+    unsigned int bufferSize);
   ~MySocket();
 
   //getter functions
