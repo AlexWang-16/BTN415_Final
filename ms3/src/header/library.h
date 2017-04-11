@@ -8,6 +8,7 @@
 #include <thread>
 #include <chrono>
 #include <vector>
+#include <string>
 
 enum CmdType {DRIVE, STATUS, SLEEP, ARM, CLAW, ACK};
 const int FORWARD = 1;
