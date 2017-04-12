@@ -138,7 +138,7 @@ void commandThread(string ip, int port) {
     std::cout << "PktCount: " << test.getPktCount() << '\n';
     std::cout << "Command: " << test.getCmd() << '\n';
     std::cout << "Length: " << test.getLength() << '\n';
-    std::cout << "Body data: " << *test.getBodyData() << '\n';*/
+    std::cout << "Bo  dy data: " << *test.getBodyData() << '\n';*/
     
     //this_thread::sleep_for(std::chrono::milliseconds(1000000));
     //Send DefPkt through socket
