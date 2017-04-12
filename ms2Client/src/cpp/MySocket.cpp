@@ -102,10 +102,6 @@ void MySocket::SendData(const char* data, int dataSize)
 
       sendto(this->WelcomeSocket, data, dataSize + 1, 0,
         (struct sockaddr *)&CltAddr, sizeof(CltAddr));
-
-      //Close the conection and free server socket resource
-      closesocket(this->WelcomeSocket);
-      WSACleanup();
     }
   }
 }
@@ -126,10 +122,6 @@ int MySocket::GetData(char * recvBuffer)
       int addr_len = sizeof(SvrAddr);
 
       recvfrom(this->ConnectionSocket, recvBuffer, this->MaxSize, 0, (struct sockaddr *) &SvrAddr, &addr_len);
-
-      //Close the conection and free client socket resource
-      closesocket(this->ConnectionSocket);
-      WSACleanup();
     }
     else if (this->GetType() == SERVER) {
       struct sockaddr_in CltAddr; //A struct that holds client IP and port info
@@ -280,4 +272,15 @@ void MySocket::accept_connection() {
 MySocket::~MySocket()
 {
   delete[] this->Buffer;
+
+  //Close UDP socket and free resource
+  if (this->GetConnectionType() == UDP) {
+    if (this->GetType() == SERVER) {
+      closesocket(this->WelcomeSocket);
+    }
+    else {
+      closesocket(this->ConnectionSocket);
+    }
+    WSACleanup();
+  }
 }
