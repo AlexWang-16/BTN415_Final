@@ -69,32 +69,13 @@ public:
 	bool checkCRC(char* ptr, int bufferSize);
 	void calcCRC();		
 	char* genPacket(); 
+
+  //overloaded operators
+  void operator= (char*);
+
+  //Special functions
+  void copy(char* data);
+  void clearCmd();
 }; 
-
-class winsock {
-protected:
-	int version_num1, version_num2; // determines the WSADATA version numbers
-	int port; // port number
-	std::string ip; //ip string e.g. "127.0.0.1"
-	char rx_buffer[128] = {}; //note that the rx_buffer has only 128 bytes
-	WSADATA wsa_data;
-public:
-	void start_DLLS();
-	SOCKET initialize_tcp_socket();
-	winsock();
-};
-
-class winsock_client : public winsock {
-protected:
-	SOCKET client_socket;
-public:
-	char * receive_message(); //receives message from the client_socket
-	void send_message(char *); //sends message to the client_socket
-	void get_messages(); //continuously prints messages received
-	void connect_to_tcp_server(); //tries to connect, exits if no server available
-	void connect_to_tcp_server_loop(); //keeps trying to connect until successful
-	winsock_client(int, std::string);
-	~winsock_client();
-};
 
 #endif

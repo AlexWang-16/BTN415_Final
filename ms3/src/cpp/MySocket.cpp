@@ -6,57 +6,62 @@ MySocket::MySocket(SocketType socketType, std::string ipAddress, unsigned int po
   this->version_num2 = 2;
   this->start_DLLS();
 
-  SetType(socketType);
-  SetIPAddr(ipAddress);
-  SetPort(port);
+  setType(socketType);
+  setIPAddr(ipAddress);
+  setPort(portNumber);
   this->connectionType = connectionType;
 
   if (0 < bufferSize && bufferSize <= std::numeric_limits<int>::max()) {
     Buffer = new char[bufferSize];
-    this->MaxSize = bufferSize;
+    this->maxSize = bufferSize;
   }
   else {
     Buffer = new char[DEFAULT_SIZE];
-    this->MaxSize = DEFAULT_SIZE;
+    this->maxSize = DEFAULT_SIZE;
   }
 
-  if (this->GetConnectionType() == TCP) {
-    if (this->GetType() == SERVER) {
-      this->WelcomeSocket = this->initialize_tcp_socket();
-      this->bind_socket();
-      this->listen_socket();
-      this->accept_connection();
+  if (this->getConnectionType() == TCP) {
+    if (this->getType() == SERVER) {
+      this->welcomeSocket = this->initializeTcpSocket();
+      this->bindSocket();
+      this->listenSocket();
+      this->acceptConnection();
     }
     else {
-      this->ConnectionSocket = this->initialize_tcp_socket();
+      this->connectionSocket = this->initializeTcpSocket();
     }
   }
-  else if (this->GetConnectionType() == UDP) {
-    if (this->GetType() == SERVER) {
-      this->WelcomeSocket = this->initialize_udp_socket();
-      this->bind_socket();
+  else if (this->getConnectionType() == UDP) {
+    if (this->getType() == SERVER) {
+      this->welcomeSocket = this->initializeUdpSocket();
+      this->bindSocket();
       bTCPConnect = true;
       std::cout << "Server: Online and waiting for connection\n";
     }
     else {
-      this->ConnectionSocket = this->initialize_udp_socket();
+      this->connectionSocket = this->initializeUdpSocket();
       this->bTCPConnect = true;
       std::cout << "Client: UDP connection initialized\n";
     }
   }
 }
 
-void MySocket::ConnectTCP()
+void MySocket::connectTCP()
 {
   std::cout << "Trying to connect to the server" << std::endl;
 
-  struct sockaddr_in SvrAddr;
-  SvrAddr.sin_family = AF_INET; //Address family type internet
-  SvrAddr.sin_port = htons(this->GetPort()); //port (host to network conversion)
-  SvrAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str()); //IP address
+  this->svrAddr.sin_family = AF_INET; //Address family type internet
+  this->svrAddr.sin_port = htons(this->getPort()); //port (host to network conversion)
+  this->svrAddr.sin_addr.s_addr = inet_addr(this->getIPAddr().c_str()); //IP address
+
+  int tries = 0;
   while (!this->bTCPConnect) {
-    if ((connect(this->ConnectionSocket, (struct sockaddr *)&SvrAddr, sizeof(SvrAddr))) == SOCKET_ERROR) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    if ((connect(this->connectionSocket, (struct sockaddr *)&svrAddr, sizeof(svrAddr))) == SOCKET_ERROR) {
+      if ((tries % 5) == 0) {
+        std::cout << "Connection is failing. Retried 5 times\n";
+      }
+      tries++;
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
     else {
       std::cout << "Connection Established" << std::endl;
@@ -65,88 +70,88 @@ void MySocket::ConnectTCP()
   }
 }
 
-void MySocket::DisconnectTCP()
+void MySocket::disconnectTCP()
 {
-  if (this->GetType() == SERVER) {
-    closesocket(this->ConnectionSocket);
-    closesocket(this->WelcomeSocket);
+  if (this->getType() == SERVER) {
+    closesocket(this->connectionSocket);
+    closesocket(this->welcomeSocket);
     WSACleanup();
   }
   else {
-    closesocket(this->ConnectionSocket);
+    closesocket(this->connectionSocket);
     WSACleanup();
   }
 }
 
-void MySocket::SendData(const char* data, int dataSize)
+void MySocket::sendData(const char* data, int dataSize)
 {
   if (this->connectionType == TCP) {
     //we transmit dataSize + 1 length so the \0 will be included
-    send(this->ConnectionSocket, data, dataSize + 1, 0);
+    send(this->connectionSocket, data, dataSize + 1, 0);
   }
   else if (this->connectionType == UDP) {
-    if (this->GetType() == CLIENT) {
-      this->SvrAddr.sin_family = AF_INET;
-      this->SvrAddr.sin_port = htons(this->port);
-      this->SvrAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str());
+    if (this->getType() == CLIENT) {
+      this->svrAddr.sin_family = AF_INET;
+      this->svrAddr.sin_port = htons(this->port);
+      this->svrAddr.sin_addr.s_addr = inet_addr(this->getIPAddr().c_str());
 
       //we transmit dataSize + 1 length so the \0 will be included
-      sendto(this->ConnectionSocket, data, dataSize + 1, 0,
-        (struct sockaddr *)&SvrAddr, sizeof(SvrAddr));
+      sendto(this->connectionSocket, data, dataSize + 1, 0,
+        (struct sockaddr *)&svrAddr, sizeof(svrAddr));
     }
-    else if (this->GetType() == SERVER) {
+    else if (this->getType() == SERVER) {
       struct sockaddr_in CltAddr; //A struct that holds client IP and port info
       CltAddr.sin_family = AF_INET;
       CltAddr.sin_port = htons(this->port);
-      CltAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str());
+      CltAddr.sin_addr.s_addr = inet_addr(this->getIPAddr().c_str());
 
-      sendto(this->WelcomeSocket, data, dataSize + 1, 0,
+      sendto(this->welcomeSocket, data, dataSize + 1, 0,
         (struct sockaddr *)&CltAddr, sizeof(CltAddr));
     }
   }
 }
 
 //Receives data, stores data into char* data and returns number of bytes stored
-int MySocket::GetData(char * recvBuffer)
+int MySocket::getData(char * recvBuffer)
 {
   if (this->connectionType == TCP) {
-    memset(recvBuffer, 0, this->MaxSize);
-    recv(this->ConnectionSocket, recvBuffer, this->MaxSize, 0);
+    memset(recvBuffer, 0, this->maxSize);
+    recv(this->connectionSocket, recvBuffer, this->maxSize, 0);
   }
   else if (this->connectionType == UDP) {
-    memset(recvBuffer, 0, this->MaxSize);
-    if (this->GetType() == CLIENT) {
-      this->SvrAddr.sin_family = AF_INET;
-      this->SvrAddr.sin_port = htons(this->port);
-      this->SvrAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str());
-      int addr_len = sizeof(SvrAddr);
+    memset(recvBuffer, 0, this->maxSize);
+    if (this->getType() == CLIENT) {
+      this->svrAddr.sin_family = AF_INET;
+      this->svrAddr.sin_port = htons(this->port);
+      this->svrAddr.sin_addr.s_addr = inet_addr(this->getIPAddr().c_str());
+      int addr_len = sizeof(svrAddr);
 
-      recvfrom(this->ConnectionSocket, recvBuffer, this->MaxSize, 0, (struct sockaddr *) &SvrAddr, &addr_len);
+      recvfrom(this->connectionSocket, recvBuffer, this->maxSize, 0, (struct sockaddr *) &svrAddr, &addr_len);
     }
-    else if (this->GetType() == SERVER) {
+    else if (this->getType() == SERVER) {
       struct sockaddr_in CltAddr; //A struct that holds client IP and port info
       CltAddr.sin_family = AF_INET;
       CltAddr.sin_port = htons(this->port);
-      CltAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str());
+      CltAddr.sin_addr.s_addr = inet_addr(this->getIPAddr().c_str());
       int addr_len = sizeof(CltAddr);
-      recvfrom(this->WelcomeSocket, recvBuffer, this->MaxSize, 0, (struct sockaddr *) &CltAddr, &addr_len);
+      recvfrom(this->welcomeSocket, recvBuffer, this->maxSize, 0, (struct sockaddr *) &CltAddr, &addr_len);
     }
   }
-  return this->MaxSize;
+  return this->maxSize;
 }
 
-std::string MySocket::GetIPAddr()
+std::string MySocket::getIPAddr()
 {
   return this->IPAddr;
 }
 
-void MySocket::SetIPAddr(std::string ipAddress)
+void MySocket::setIPAddr(std::string ipAddress)
 {
   if (!this->bTCPConnect) {
     this->IPAddr = ipAddress;
   }
   else {
-    if (this->GetType() == CLIENT) {
+    if (this->getType() == CLIENT) {
       std::cerr << "Error: A connection is already active. Cannot set IP Address. Please disconnect and try again.\n";
     }
     else {
@@ -155,13 +160,13 @@ void MySocket::SetIPAddr(std::string ipAddress)
   }
 }
 
-void MySocket::SetPort(int portNumber)
+void MySocket::setPort(int portNumber)
 {
   if (!this->bTCPConnect) {
     this->port = portNumber;
   }
   else {
-    if (this->GetType() == CLIENT) {
+    if (this->getType() == CLIENT) {
       std::cerr << "Error: A connection is already active. Cannot set port number. Please disconnect and try again.\n";
     }
     else {
@@ -170,22 +175,22 @@ void MySocket::SetPort(int portNumber)
   }
 }
 
-int MySocket::GetPort()
+int MySocket::getPort()
 {
   return this->port;
 }
 
-SocketType MySocket::GetType()
+SocketType MySocket::getType()
 {
   return this->mySocket;
 }
 
-void MySocket::SetType(SocketType socketType)
+void MySocket::setType(SocketType socketType)
 {
   this->mySocket = socketType;
 }
 
-ConnectionType MySocket::GetConnectionType()
+ConnectionType MySocket::getConnectionType()
 {
   return this->connectionType;
 }
@@ -199,7 +204,7 @@ void MySocket::start_DLLS()
   }
 }
 
-SOCKET MySocket::initialize_tcp_socket()
+SOCKET MySocket::initializeTcpSocket()
 {
   SOCKET LocalSocket;
   LocalSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -212,7 +217,7 @@ SOCKET MySocket::initialize_tcp_socket()
   return LocalSocket;
 }
 
-SOCKET MySocket::initialize_udp_socket()
+SOCKET MySocket::initializeUdpSocket()
 {
   SOCKET LocalSocket;
   LocalSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -225,15 +230,15 @@ SOCKET MySocket::initialize_udp_socket()
   return LocalSocket;
 }
 
-void MySocket::bind_socket()
+void MySocket::bindSocket()
 {
-  struct sockaddr_in SvrAddr;
-  SvrAddr.sin_family = AF_INET; //Address family type internet
-  SvrAddr.sin_port = htons(this->GetPort()); //port (host to network conversion)
-  SvrAddr.sin_addr.s_addr = inet_addr(this->GetIPAddr().c_str()); //IP address
-  if ((bind(this->WelcomeSocket, (struct sockaddr *)&SvrAddr, sizeof(SvrAddr)))
+  struct sockaddr_in svrAddr;
+  svrAddr.sin_family = AF_INET; //Address family type internet
+  svrAddr.sin_port = htons(this->getPort()); //port (host to network conversion)
+  svrAddr.sin_addr.s_addr = inet_addr(this->getIPAddr().c_str()); //IP address
+  if ((bind(this->welcomeSocket, (struct sockaddr *)&svrAddr, sizeof(svrAddr)))
     == SOCKET_ERROR) {
-    closesocket(this->WelcomeSocket);
+    closesocket(this->welcomeSocket);
     WSACleanup();
     std::cout << "Could not bind to the socket" << std::endl;
     std::cin.get();
@@ -242,10 +247,10 @@ void MySocket::bind_socket()
   bTCPConnect = true;		//Server socket is active
 }
 
-void MySocket::listen_socket()
+void MySocket::listenSocket()
 {
-  if (listen(this->WelcomeSocket, 1) == SOCKET_ERROR) {
-    closesocket(this->WelcomeSocket);
+  if (listen(this->welcomeSocket, 1) == SOCKET_ERROR) {
+    closesocket(this->welcomeSocket);
     WSACleanup();
     std::cout << "Could not listen to the provided socket." << std::endl;
     std::cin.get();
@@ -256,9 +261,9 @@ void MySocket::listen_socket()
   }
 }
 
-void MySocket::accept_connection() {
-  if ((this->ConnectionSocket = accept(this->WelcomeSocket, NULL, NULL)) == SOCKET_ERROR) {
-    closesocket(this->WelcomeSocket);
+void MySocket::acceptConnection() {
+  if ((this->connectionSocket = accept(this->welcomeSocket, NULL, NULL)) == SOCKET_ERROR) {
+    closesocket(this->welcomeSocket);
     WSACleanup();
     std::cout << "Could not accept incoming connection." << std::endl;
     std::cin.get();
@@ -274,12 +279,12 @@ MySocket::~MySocket()
   delete[] this->Buffer;
 
   //Close UDP socket and free resource
-  if (this->GetConnectionType() == UDP) {
-    if (this->GetType() == SERVER) {
-      closesocket(this->WelcomeSocket);
+  if (this->getConnectionType() == UDP) {
+    if (this->getType() == SERVER) {
+      closesocket(this->welcomeSocket);
     }
     else {
-      closesocket(this->ConnectionSocket);
+      closesocket(this->connectionSocket);
     }
     WSACleanup();  
   }

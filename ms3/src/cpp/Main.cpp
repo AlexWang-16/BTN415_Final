@@ -1,5 +1,6 @@
 #ifndef MS3_MAIN
 #define MS3_MAIN
+#define NOMINMAX
 #define _CRT_SECURE_NO_WARNINGS
 #define DATA_BYTE_SIZE 100
 #include "../header/library.h"
@@ -7,217 +8,243 @@
 
 using namespace std;
 
+bool ExeComplete = false, dataSent = false;
 int pktCount = 0;
-string ip;
-int port = 0;
-bool ExeComplete = false;
+string commandIP, telemetryIP;
+int commandPort, telemetryPort = 0;
 
 int main() {
+      cout << "Command socket connection information\n";
+      cout << "-------------------------------------\n";
+      cout << "IP Address: ";
+      getline(cin, commandIP);
+      cout << "Port: ";
+      cin >> commandPort;
 
-  cout << "IP Address: ";
-  getline(cin, ip);
-  cout << "Port: ";
-  cin >> port;
-  
-  // ms3 instructions say that global bool ExeComplete = false, and two threads should be spawned from the main process. 
-  // once detached, the main process should loop until ExeComplete == true
+      cin.clear();
+      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-  thread command(commandThread, ip, port);
-  thread telemetry(telemetryThread, ip, port);
-  
-  
-	//while (ExeComplete == false) {
-		command.join();
-		telemetry.join();
-	//}
-  
+      /*cout << "\nTelemetry socket connection information\n";
+      cout << "-------------------------------------\n";
+      cout << "IP Address: ";
+      getline(cin, telemetryIP);
+      cout << "Port: ";
+      cin >> telemetryPort;
+      
+      cin.clear();
+      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');*/
+
+      thread command(commandThread, commandIP, commandPort);
+      //thread telemetry(telemetryThread, telemetryIP, telemetryPort);
+
+      command.join();
+      //telemetry.join();
 
   return 0;
 }
 
-void commandThread(std::string ipAddress, int port) {
+void commandThread(string ip, int port) {
+  
+  
+  PktDef sendPkt;
+  std::string cmdType;
 
-	/*
-	Commands:
-	• Create a MySocket object configured as a SocketType::CLIENT and ConnectionType::TCP (DONE)
-	• Perform 3 way handshake (DONE)
-	• Query the user to get all required information to form a packet (Somewhat done, will Anthony's querying code come in here?)
-	• Generate a Packet of type PktDe based on user input and increment the PktCount number (DONE)
-	• Transmit the packet to the robot via the MySocket connection (DONE)
-	• Wait for an acknowledgement packet from the robot (Confused about this - will the telemetryThread receive the robots transmissions, or does the commandThread parse through it as well?)
-	• Continue this process (what process - querying the user to create overwrite the previous packet and then send it? Or just ask for the command type and overwrite that?) unti
-	the user requests to send a SLEEP command. Upon receiving an Ack packet from the robot, acknowledging the SLEEP command, the logic should:
-		- disconnect the MySocket  
-		- set the ExeComplete flag to TRUE
-		- end the thread
-	
-	*/
-	
-    MySocket CommandSocket(SocketType::CLIENT, ip, port, ConnectionType::TCP, DATA_BYTE_SIZE);
+  MotorBody driveData;
+  std::string direction;
+  int duration = 0;
+  
+  char* pktData = nullptr;
+  
+  char buff[DATA_BYTE_SIZE];
+  int rxSize = 0;
 
-    CommandSocket.ConnectTCP();
+  //Establish connection
+  MySocket CommandSocket(SocketType::CLIENT, ip, port, ConnectionType::TCP, DATA_BYTE_SIZE);
+  CommandSocket.connectTCP();
 
-	while(ExeComplete == false) {
-		
-	MotorBody driveData;
-    std::string direction;
-    int duration;
-
-    std::cout << "Please enter the direction: ";
-    std::cin >> direction;
-    std::cout << "Please enter the duration: ";
-    std::cin >> duration;
-
-    PktDef sendPkt;
-    std::string cmdType;
+  while (!ExeComplete) {
+    duration = 0;   //duration will change according to user input each time
 
     std::cout << "Please enter the command: ";
-	std::cin >> cmdType;
-    sendPkt.setCmd(cmdType);		
-	//this is where things get tricky - need to either check the string cmdType in an if else statement 
-	//and assign it to an int value (e.g. 0, 1 for the enum types, or use a 'mapping' function)
+    getline(std::cin, cmdType);
+    
+    if (cmdType != "sleep") {
+      std::cout << "Please enter the direction: ";
+      std::cin >> direction;
+      
+      if (cmdType == "drive"){
+        std::cout << "Please enter the duration: ";
+        std::cin >> duration;
+      }
+    }
+    
+    //Set Packet Count
+    sendPkt.setPktCount(pktCount + 1);
 
-    sendPkt.setBodyData((char*)&driveData, 2);
+    // Setting command
+    if (cmdType == "drive") {
+      sendPkt.setCmd(DRIVE);
+    }
+    else if (cmdType == "status") {
+      sendPkt.setCmd(STATUS);
+    }
+    else if (cmdType == "sleep") {
+      sendPkt.setCmd(SLEEP);
+      ExeComplete = true;   //Use this to defer disconnecting until after sending the pkt
+    }
+    else if (cmdType == "arm") {
+      sendPkt.setCmd(ARM);
+    }
+    else if (cmdType == "claw") {
+      sendPkt.setCmd(CLAW);
+    }
+
+    // Setting direction
+    if (direction == "forward") {
+      driveData.direction = FORWARD;
+    }
+    else if (direction == "backward") {
+      driveData.direction = BACKWARD;
+    }
+    else if (direction == "right") {
+      driveData.direction = RIGHT;
+    }
+    else if (direction == "left") {
+      driveData.direction = LEFT;
+    }
+    else if (direction == "up") {
+      driveData.direction = UP;
+    }
+    else if (direction == "down") {
+      driveData.direction = DOWN;
+    }
+    else if (direction == "open") {
+      driveData.direction = OPEN;
+    }
+    else if (direction == "close") {
+      driveData.direction = CLOSE;
+    }
+    
+    // Write body data to sendPkt
+    sendPkt.setBodyData(reinterpret_cast<char*>(&driveData), 2);
+
+    //Calc CRC
     sendPkt.calcCRC();
 
-	
-	//generate packet
-	char *ptr;
-	ptr = sendPkt.genPacket();
-	
-	//send packet over the socket
-    CommandSocket.SendData(ptr, strlen(ptr));
-	pktCount++; 	//increment PktCount
+    //Generate packet
+    pktData = sendPkt.genPacket();
 
-	//confused about this part - receive an ack packet from the robot and parse through it?
-    char buff[DATA_BYTE_SIZE];
-    int RxSize = CommandSocket.GetData(buff);
-	
-	PktDef recPacket(buff);
-	recPacket.calcCRC();
-	
-	if (sendPkt.getCmd() == SLEEP && (recPacket.checkCRC(buff, RxSize))){
-		if (recPacket.getCmd() == ACK) {	//if sendPkt sent SLEEP and recPacket acknowledged SLEEP
-			std::cout << "Robot has acknowledged the SLEEP command. Thank you." << std::endl;
-			CommandSocket.DisconnectTCP();
-			ExeComplete = true;
-			break;	//break while(true) loop
-			
-		} else if (recPacket.getCmd() !=ACK) {
-			std::cout << "Negative acknowledgement. Please try again!" << std::endl;
-		}
-	} else if (sendPkt.getCmd() != SLEEP && recPacket.checkCRC(buff, RxSize)) {
-		if (recPacket.getCmd() != ACK) {
-			std::cout << "Negative acknowledgement. Please try again!" << std::endl;
-		}
-	}
+    /*PktDef test(pktData);
+    std::cout << "PktCount: " << test.getPktCount() << '\n';
+    std::cout << "Command: " << test.getCmd() << '\n';
+    std::cout << "Length: " << test.getLength() << '\n';
+    std::cout << "Body data: " << *test.getBodyData() << '\n';*/
+    
+    //this_thread::sleep_for(std::chrono::milliseconds(1000000));
+    //Send DefPkt through socket
+    CommandSocket.sendData(pktData, sendPkt.getLength());
+    
+    dataSent = 1;
+
+    PktDef responsePkt(buff);
+    
+    //Check for NACK response, repeat until ACK
+    while (!responsePkt.getAck()) {
+      this_thread::sleep_for(std::chrono::milliseconds(500));
+      memset(buff, 0, DATA_BYTE_SIZE);
+      rxSize = CommandSocket.getData(buff);
+      responsePkt = buff;
+      std::cerr << "Error: CRC check failed. NACK response received.\n";
+    }
+
+    if (ExeComplete) {
+      CommandSocket.disconnectTCP();
+    }
 
   } 
 }
 
 void telemetryThread(std::string ipAddress, int port) {
-  /*
-  Commands:
-  • Create a Telemetry socket (DONE)
-  • Perform 3 way handshake (DONE)
-  • Receive telemetry packets from the robot. (DONE)
-  1) Verify CRC (DONE)
-  A telemetry packet is 16 bytes in size
-  2) Verify Header data that STATUS bit is set to true (DONE)
-  3) Extract and display decimal version of sensor data in the body packet
-  • Arm Reading (DONE)
-  • Sonar reading (DONE)
-  4) Extract and display Drive flag as 0 or 1 (DONE)
-  5) Extract and display Arm and Claw status in English (DONE)
-  i.e. "Arm is Up, Claw is Closed"
-  Side Note: If validation fails at any point, sotware should log error to std::cout
-  and drop the remaining processing of the packet. (We need to simulate a
-  NACK to test this).
-  */
+  
   char dataBuffer[DATA_BYTE_SIZE];
-  MySocket telemetryClient(SocketType::CLIENT, ip, port, ConnectionType::TCP,
-    DATA_BYTE_SIZE);
+  MySocket telemetryClient(SocketType::CLIENT, ipAddress, port, ConnectionType::TCP,
+                            DATA_BYTE_SIZE);
 
-  telemetryClient.ConnectTCP();
-  int dataSize = telemetryClient.GetData(dataBuffer);
+  telemetryClient.connectTCP();
+  int dataSize = telemetryClient.getData(dataBuffer);
+  
+  if (!dataSent) {
+    //Display raw data packet
+    cout << "Raw data buffer contents: " << dataBuffer << '\n';
 
-  //Display raw data packet
-  cout << "Raw data buffer contents: " << dataBuffer << '\n';
+    //Deserialize telemetry packet
+    PktDef telemetryPacket(dataBuffer);
+    telemetryPacket.calcCRC();
 
-  //Deserialize telemetry packet
-  PktDef telemetryPacket(dataBuffer);
-  telemetryPacket.calcCRC();
+    //CRC check
+    if (telemetryPacket.checkCRC(dataBuffer, dataSize)) {
+      cout << "CRC Check status: OK\n";
 
-  //CRC check
-  if (telemetryPacket.checkCRC(dataBuffer, dataSize)) {
-    cout << "CRC Check status: OK\n";
+      //DEBUG ONLY STATUS bit validation. Remove after GM.
+      if (telemetryPacket.getCmd() == STATUS) {
+        cout << "Status bit is TRUE\n";
+      }
+      else {
+        cout << "Status bit is FALSE\n";
+      }
 
-    //DEBUG ONLY STATUS bit validation. Remove after GM.
-    if (telemetryPacket.getCmd() == STATUS) {
-      cout << "Status bit is TRUE\n";
+
+      if (telemetryPacket.getPktCount() == (pktCount + 1)
+        && telemetryPacket.getLength() > 7
+        && telemetryPacket.getCmd() == STATUS) {
+        //MotorBody data exists. Create a struct and memcpy into the struct
+
+        struct TelemetryData {
+          short sonarSensorData = 0;
+          short armPositionData = 0;
+          unsigned char drive : 1;
+          unsigned char armUp : 1;
+          unsigned char armDown : 1;
+          unsigned char clawOpen : 1;
+          unsigned char clawClosed : 1;
+          unsigned char padding : 3;
+
+          TelemetryData() {
+            padding = 0;
+          }
+        } pkt;
+
+        memcpy(&pkt, telemetryPacket.getBodyData(), sizeof(TelemetryData));
+
+        cout << "Sonar Sensor Data: "
+          << pkt.sonarSensorData << '\n';
+
+        cout << "Arm Position Data: "
+          << pkt.armPositionData << "\n\n";
+
+        cout << "Robot status data\n\n";
+        cout << "Drive: " << pkt.drive << '\n';
+
+        if (pkt.armUp) {
+          cout << "Arm is up, ";
+        }
+        else {
+          cout << "Arm is down, ";
+        }
+
+        if (pkt.clawOpen) {
+          cout << "Claw is Open.\n";
+        }
+        else {
+          cout << "Claw is Closed.\n";
+        }
+      }
     }
     else {
-      cout << "Status bit is FALSE\n";
+      cout << "CRC Check status: FAIL\n";
     }
-
-    //Extract and display decimal version of sensor data in body reading
-    /*A telemetry response is when
-    • Status set to 1, all other bits 0
-    • PktCount sent + 1 == PktCount received
-    • MotorBody has data
-    */
-
-    //int pktCount = 0;   // Temp variable. Need to map this to main
-    if (telemetryPacket.getPktCount() == (pktCount + 1)
-      && telemetryPacket.getLength() > 7
-      && telemetryPacket.getCmd() == STATUS) {
-      //MotorBody data exists. Create a struct and memcpy into the struct
-
-      struct TelemetryData {
-        short sonarSensorData = 0;
-        short armPositionData = 0;
-        unsigned char drive : 1;
-        unsigned char armUp : 1;
-        unsigned char armDown : 1;
-        unsigned char clawOpen : 1;
-        unsigned char clawClosed : 1;
-        unsigned char padding : 3;
-
-        TelemetryData() {
-          padding = 0;
-        }
-      } pkt;
-
-      memcpy(&pkt, telemetryPacket.getBodyData(), sizeof(TelemetryData));
-
-      cout << "Sonar Sensor Data: "
-        << pkt.sonarSensorData << '\n';
-
-      cout << "Arm Position Data: "
-        << pkt.armPositionData << "\n\n";
-
-      cout << "Robot status data\n\n";
-      cout << "Drive: " << pkt.drive << '\n';
-
-      if (pkt.armUp) {
-        cout << "Arm is up, ";
-      }
-      else {
-        cout << "Arm is down, ";
-      }
-
-      if (pkt.clawOpen) {
-        cout << "Claw is Open.\n";
-      }
-      else {
-        cout << "Claw is Closed.\n";
-      }
-    }
+    dataSent = 0;
   }
-  else {
-    cout << "CRC Check status: FAIL\n";
-  }
-
-
+  
 }
 #endif

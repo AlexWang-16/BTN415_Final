@@ -8,8 +8,9 @@
 #include <thread>
 #include <chrono>
 #include <vector>
+#include <string>
 
-enum CmdType {DRIVE, SLEEP, ARM, CLAW, ACK};
+enum CmdType { DRIVE, STATUS, SLEEP, ARM, CLAW, ACK };
 const int FORWARD = 1;
 const int BACKWARD = 2;
 const int RIGHT = 3;
@@ -21,71 +22,60 @@ const int CLOSE = 8;
 const int HEADERSIZE = 6;
 
 struct MotorBody {
-	unsigned char direction;
-	unsigned char duration;
+  unsigned char direction;
+  unsigned char duration;
 };
 
 struct Header {
-	unsigned int pktCount;
-	unsigned char drive : 1;	//This is the first bit (2^0)
-	unsigned char status : 1;	//Used to see if robot has recieved cmd
-	unsigned char sleep : 1;
-	unsigned char arm : 1;
-	unsigned char claw : 1;
-	unsigned char ack : 1;
-	unsigned char padding : 2;
-	unsigned char length;		//Num of bytes in packet
+  unsigned int pktCount;
+  unsigned char drive : 1;	//This is the first bit (2^0)
+  unsigned char status : 1;	//Used to see if robot has recieved cmd
+  unsigned char sleep : 1;
+  unsigned char arm : 1;
+  unsigned char claw : 1;
+  unsigned char ack : 1;
+  unsigned char padding : 2;
+  unsigned char length;		//Num of bytes in packet
 };
 
 struct CmdPacket {
-	Header header;
-	char* data;
-	char CRC;
+  Header header;
+  char* data;
+  char CRC;
 };
 
 class PktDef {
-	CmdPacket cmdPacket;
-	char* rawBuffer;
+  CmdPacket cmdPacket;
+  char* rawBuffer;
 public:
-	PktDef();
-	PktDef(char*); 
-	void setCmd(CmdType); 
-	void setBodyData(char*, int);  
-	void setPktCount(int); 
-	CmdType getCmd(); 
-	bool getAck();	
-	int getLength();
-	char* getBodyData();
-	int getPktCount();
-	bool checkCRC(char*, int);	
-	void calcCRC();		
-	char* genPacket(); 
-}; 
+  //Constructors
+  PktDef();
+  PktDef(char* rawDataBuffer);
 
-class winsock {
-protected:
-	int version_num1, version_num2; // determines the WSADATA version numbers
-	int port; // port number
-	std::string ip; //ip string e.g. "127.0.0.1"
-	char rx_buffer[128] = {}; //note that the rx_buffer has only 128 bytes
-	WSADATA wsa_data;
-public:
-	void start_DLLS();
-	SOCKET initialize_tcp_socket();
-	winsock();
-};
+  //Setters
+  void setCmd(CmdType);
+  void setBodyData(char* rawDataBuffer, int bufferByteSize);
+  void setPktCount(int);
 
-class winsock_client : public winsock {
-protected:
-	SOCKET client_socket;
-public:
-	char * receive_message(); //receives message from the client_socket
-	void send_message(char *); //sends message to the client_socket
-	void get_messages(); //continuously prints messages received
-	void connect_to_tcp_server(); //tries to connect, exits if no server available
-	void connect_to_tcp_server_loop(); //keeps trying to connect until successful
-	winsock_client(int, std::string);
-	~winsock_client();
+  //Getters
+  int getPktCount();
+  CmdType getCmd();
+  bool getAck();
+  int getLength();  //Returns size of pkt in bytes
+  char* getBodyData();
+
+
+  //Validation and generation
+  bool checkCRC(char* ptr, int bufferSize);
+  void calcCRC();
+  char* genPacket();
+
+  //overloaded operators
+  void operator= (char*);
+
+  //Special functions
+  void copy(char* data);
+  void clearCmd();
 };
 
 #endif
