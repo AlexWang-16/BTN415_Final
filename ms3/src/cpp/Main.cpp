@@ -72,10 +72,12 @@ void commandThread(std::string ipAddress, int port) {
     std::string cmdType;
 
     std::cout << "Please enter the command: ";
-    getline(std::cin, cmdType);
-    sendPkt.setCmd(cmdType);
+	std::cin >> cmdType;
+    sendPkt.setCmd(cmdType);		
+	//this is where things get tricky - need to either check the string cmdType in an if else statement 
+	//and assign it to an int value (e.g. 0, 1 for the enum types, or use a 'mapping' function)
 
-    sendPkt.setBodyData((char*)&driveData);
+    sendPkt.setBodyData((char*)&driveData, 2);
     sendPkt.calcCRC();
 
 	
@@ -85,7 +87,7 @@ void commandThread(std::string ipAddress, int port) {
 	
 	//send packet over the socket
     CommandSocket.SendData(ptr, strlen(ptr));
-	PktCount++; 	//increment PktCount
+	pktCount++; 	//increment PktCount
 
 	//confused about this part - receive an ack packet from the robot and parse through it?
     char buff[DATA_BYTE_SIZE];
