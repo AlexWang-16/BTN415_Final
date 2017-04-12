@@ -99,6 +99,12 @@ void commandThread(std::string ipAddress, int port) {
 	if (sendPkt.getCmd() == SLEEP && (recPacket.checkCRC(buff, RxSize))){
 		if (recPacket.getCmd() == ACK) {	//if sendPkt sent SLEEP and recPacket acknowledged SLEEP
 			std::cout << "Robot has acknowledged the SLEEP command. Thank you." << std::endl;
+			
+			sendPkt.setCmd(SLEEP);
+			ptr = sendPkt.genPacket();
+			CommandSocket.SendData(ptr, strlen(ptr));
+			pktCount++;
+			
 			CommandSocket.DisconnectTCP();
 			ExeComplete = true;
 			break;	//break while(true) loop
