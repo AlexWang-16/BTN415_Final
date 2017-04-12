@@ -10,6 +10,7 @@ using namespace std;
 int pktCount = 0;
 string ip;
 int port = 0;
+bool ExeComplete = false;
 
 int main() {
 
@@ -17,29 +18,48 @@ int main() {
   getline(cin, ip);
   cout << "Port: ";
   cin >> port;
+  
+  // ms3 instructions say that global bool ExeComplete = false, and two threads should be spawned from the main process. 
+  // once detached, the main process should loop until ExeComplete == true
 
-  //thread command(commandThread).detach();
+  thread command(commandThread, ip, port);
   thread telemetry(telemetryThread, ip, port);
-
-  //command.join();
-  telemetry.join();
+  
+  
+	//while (ExeComplete == false) {
+		command.join();
+		telemetry.join();
+	//}
+  
 
   return 0;
 }
 
-void commandThread() {
-  bool ExeComplete = false;
+void commandThread(std::string ipAddress, int port) {
 
-  while (ExeComplete == false) {
-
-    std::string ip = "127.0.0.1";
-    int port = 5000;
-
-    MySocket CommandSocket(SocketType::CLIENT, ip, port, ConnectionType::TCP, 100);
+	/*
+	Commands:
+	• Create a MySocket object configured as a SocketType::CLIENT and ConnectionType::TCP (DONE)
+	• Perform 3 way handshake (DONE)
+	• Query the user to get all required information to form a packet (Somewhat done, will Anthony's querying code come in here?)
+	• Generate a Packet of type PktDe based on user input and increment the PktCount number (DONE)
+	• Transmit the packet to the robot via the MySocket connection (DONE)
+	• Wait for an acknowledgement packet from the robot (Confused about this - will the telemetryThread receive the robots transmissions, or does the commandThread parse through it as well?)
+	• Continue this process (what process - querying the user to create overwrite the previous packet and then send it? Or just ask for the command type and overwrite that?) unti
+	the user requests to send a SLEEP command. Upon receiving an Ack packet from the robot, acknowledging the SLEEP command, the logic should:
+		- disconnect the MySocket  
+		- set the ExeComplete flag to TRUE
+		- end the thread
+	
+	*/
+	
+    MySocket CommandSocket(SocketType::CLIENT, ip, port, ConnectionType::TCP, DATA_BYTE_SIZE);
 
     CommandSocket.ConnectTCP();
 
-    MotorBody driveData;
+	while(true) {
+		
+	MotorBody driveData;
     std::string direction;
     int duration;
 
@@ -49,35 +69,46 @@ void commandThread() {
     std::cin >> duration;
 
     PktDef sendPkt;
-    int pktCount;
     std::string cmdType;
-
-    std::cout << "Please enter the PktCount: ";
-    std::cin >> pktCount;
-    sendPkt.setPktCount(pktCount);
 
     std::cout << "Please enter the command: ";
     getline(std::cin, cmdType);
-    //sendPkt.setCmd(cmdType);
+    sendPkt.setCmd(cmdType);
 
-    //sendPkt.setBodyData((char*)&driveData);
+    sendPkt.setBodyData((char*)&driveData);
     sendPkt.calcCRC();
 
-    //CommandSocket.SendData(sendPkt.c_str(), strlen(sendPkt.c_str()));
+	
+	//generate packet
+	char *ptr;
+	ptr = sendPkt.genPacket();
+	
+	//send packet over the socket
+    CommandSocket.SendData(ptr, strlen(ptr));
+	PktCount++; 	//increment PktCount
 
-    char buff[100];
+	//confused about this part - receive an ack packet from the robot and parse through it?
+    char buff[DATA_BYTE_SIZE];
     int RxSize = CommandSocket.GetData(buff);
-    if (buff != "0") {
-      if (cmdType != "SLEEP") {
+	
+	PktDef recPacket(buff);
+	recPacket.calcCRC();
+	
+	if (sendPkt.getCmd() == SLEEP && (recPacket.checkCRC(buff, RxSize))){
+		if (recPacket.getCmd() == ACK) {	//if sendPkt sent SLEEP and recPacket acknowledged SLEEP
+			std::cout << "Robot has acknowledged the SLEEP command. Thank you." << std::endl;
+			break;	//break while(true) loop
+			
+		} else if (recPacket.getCmd() !=ACK) {
+			std::cout << "Negative acknowledgement. Please try again!" << std::endl;
+		}
+	} else if (sendPkt.getCmd() != SLEEP && recPacket.checkCRC(buff, RxSize)) {
+		if (recPacket.getCmd() != ACK) {
+			std::cout << "Negative acknowledgement. Please try again!" << std::endl;
+		}
+	}
 
-      }
-      else if (cmdType == "SLEEP") {
-        if (0)
-          CommandSocket.DisconnectTCP();
-        ExeComplete = true;
-      }
-    }
-  }
+  } 
 }
 
 void telemetryThread(std::string ipAddress, int port) {
