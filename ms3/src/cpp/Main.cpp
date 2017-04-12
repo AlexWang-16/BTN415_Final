@@ -62,24 +62,86 @@ void commandThread(std::string ipAddress, int port) {
 	MotorBody driveData;
     std::string direction;
     int duration;
+	
+	std::string command;
+	CmdType cmdType;
+	int dirType;
+	 PktDef sendPkt;
+	std::cout << "Please enter one of the following commands: DRIVE, STATUS, SLEEP, ARM, CLAW";
+	std::cin >> command;
+	
+	if (command == "DRIVE")
+	{
+		cmdType == DRIVE;
+		std::cout << "Drive command - Please Enter the direction: FORWARD, BACKWARD, RIGHT, LEFT";
+	}
+	else if (command == "ARM")
+	{
+		cmdType == ARM;
+		std::cout << "Arm command - Please Enter the direction: UP, DOWN";
+	}
+	else if (command == "CLAW")
+	{
+		cmdType == CLAW;
+		std::cout << "Claw command - Please Enter the direction: OPEN, CLOSE";
+	}
+	else if (command == "SLEEP")
+	{
+		std::cout << "Sleeping";
+		cmdType == SLEEP;
+	}
 
-    std::cout << "Please enter the direction: ";
+	sendPkt.setCmd(cmdType);
+
     std::cin >> direction;
-    std::cout << "Please enter the duration: ";
-    std::cin >> duration;
+	
+	if (direction == "FORWARD")
+	{
+		driveData.direction = 1;
+	}
+	else if (direction == "BACKWARD")
+	{
+		driveData.direction = 2;
+	}
+	else if (direction == "RIGHT")
+	{
+		driveData.direction = 3;
+	}
+	else if (direction == "LEFT")
+	{
+		driveData.direction = 4;
+	}
+	else if (direction == "UP")
+	{
+		driveData.direction = 5;
+	}
+	else if (direction == "DOWN")
+	{
+		driveData.direction = 6;
+	}
+	else if (direction == "OPEN")
+	{
+		driveData.direction = 7;
+	}
+	else if (direction == "CLOSE")
+	{
+		driveData.direction = 8;
+	}
 
-    PktDef sendPkt;
-    std::string cmdType;
-
-    std::cout << "Please enter the command: ";
-	std::cin >> cmdType;
-    sendPkt.setCmd(cmdType);		
-	//this is where things get tricky - need to either check the string cmdType in an if else statement 
-	//and assign it to an int value (e.g. 0, 1 for the enum types, or use a 'mapping' function)
-
-    sendPkt.setBodyData((char*)&driveData, 2);
+	if (cmdType == ARM || cmdType == CLAW || cmdType == SLEEP)
+	{
+		std::cout << "Claw/Arm/Sleep command detected, no duration required" << std::endl;
+		driveData.duration = 0;
+	}
+	else
+	{
+		std::cout << "Please enter the duration: ";
+		std::cin >> duration;
+		driveData.duration = duration;
+	}
+   
+    sendPkt.setBodyData((char*)&driveData, sizeof(driveData));
     sendPkt.calcCRC();
-
 	
 	//generate packet
 	char *ptr;
@@ -96,7 +158,7 @@ void commandThread(std::string ipAddress, int port) {
 	PktDef recPacket(buff);
 	recPacket.calcCRC();
 	
-	if (sendPkt.getCmd() == SLEEP && (recPacket.checkCRC(buff, RxSize))){
+	if (sendPkt.getCmd() == SLEEP && (recPacket.checkCRC(buff, RxSize))) {
 		if (recPacket.getCmd() == ACK) {	//if sendPkt sent SLEEP and recPacket acknowledged SLEEP
 			std::cout << "Robot has acknowledged the SLEEP command. Thank you." << std::endl;
 			
