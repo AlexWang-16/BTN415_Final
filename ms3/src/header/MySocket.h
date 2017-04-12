@@ -67,7 +67,6 @@ public:
 
 };
 
-void commandThread();
-void telemetryThread(std::string ipAddress, int port,
-                     int* pktCount);
+void commandThread(std::string ip, int port);
+void telemetryThread(std::string ipAddress, int port);
 #endif MYSOCKET_H

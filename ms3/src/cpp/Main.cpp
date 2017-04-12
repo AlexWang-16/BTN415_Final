@@ -7,21 +7,20 @@
 
 using namespace std;
 
+int pktCount = 0;
+string ip;
+int port = 0;
 
 int main() {
 
-  int pktCount = 0; 
-  string ip;
-  int port = 0;
-  
-  cout << "IP Address: "; 
+  cout << "IP Address: ";
   getline(cin, ip);
   cout << "Port: ";
   cin >> port;
 
   //thread command(commandThread).detach();
-  thread telemetry(telemetryThread, ip, port, &pktCount);
-  
+  thread telemetry(telemetryThread, ip, port);
+
   //command.join();
   telemetry.join();
 
@@ -81,35 +80,28 @@ void commandThread() {
   }
 }
 
-void telemetryThread(std::string ipAddress, int port, int* pktCount) {
+void telemetryThread(std::string ipAddress, int port) {
   /*
   Commands:
   • Create a Telemetry socket (DONE)
   • Perform 3 way handshake (DONE)
   • Receive telemetry packets from the robot. (DONE)
-
   1) Verify CRC (DONE)
   A telemetry packet is 16 bytes in size
-
   2) Verify Header data that STATUS bit is set to true (DONE)
   3) Extract and display decimal version of sensor data in the body packet
   • Arm Reading (DONE)
   • Sonar reading (DONE)
-
   4) Extract and display Drive flag as 0 or 1 (DONE)
   5) Extract and display Arm and Claw status in English (DONE)
-
   i.e. "Arm is Up, Claw is Closed"
-
   Side Note: If validation fails at any point, sotware should log error to std::cout
   and drop the remaining processing of the packet. (We need to simulate a
   NACK to test this).
-
-
   */
   char dataBuffer[DATA_BYTE_SIZE];
-  MySocket telemetryClient(SocketType::CLIENT, "127.0.0.1", 5000, ConnectionType::TCP,
-                            DATA_BYTE_SIZE);
+  MySocket telemetryClient(SocketType::CLIENT, ip, port, ConnectionType::TCP,
+    DATA_BYTE_SIZE);
 
   telemetryClient.ConnectTCP();
   int dataSize = telemetryClient.GetData(dataBuffer);
@@ -124,7 +116,7 @@ void telemetryThread(std::string ipAddress, int port, int* pktCount) {
   //CRC check
   if (telemetryPacket.checkCRC(dataBuffer, dataSize)) {
     cout << "CRC Check status: OK\n";
-    
+
     //DEBUG ONLY STATUS bit validation. Remove after GM.
     if (telemetryPacket.getCmd() == STATUS) {
       cout << "Status bit is TRUE\n";
@@ -141,7 +133,7 @@ void telemetryThread(std::string ipAddress, int port, int* pktCount) {
     */
 
     //int pktCount = 0;   // Temp variable. Need to map this to main
-    if (telemetryPacket.getPktCount() == (*pktCount + 1)
+    if (telemetryPacket.getPktCount() == (pktCount + 1)
       && telemetryPacket.getLength() > 7
       && telemetryPacket.getCmd() == STATUS) {
       //MotorBody data exists. Create a struct and memcpy into the struct
@@ -191,6 +183,6 @@ void telemetryThread(std::string ipAddress, int port, int* pktCount) {
     cout << "CRC Check status: FAIL\n";
   }
 
-  
+
 }
 #endif
