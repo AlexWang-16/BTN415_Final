@@ -8,13 +8,13 @@
 
 using namespace std;
 
-bool ExeComplete = false, dataSent = false;
+bool ExeComplete = false, dataSent = true;
 int pktCount = 0;
 string commandIP, telemetryIP;
 int commandPort, telemetryPort = 0;
 
 int main() {
-      cout << "Command socket connection information\n";
+      /*cout << "Command socket connection information\n";
       cout << "-------------------------------------\n";
       cout << "IP Address: ";
       getline(cin, commandIP);
@@ -22,9 +22,9 @@ int main() {
       cin >> commandPort;
 
       cin.clear();
-      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');*/
 
-      /*cout << "\nTelemetry socket connection information\n";
+      cout << "\nTelemetry socket connection information\n";
       cout << "-------------------------------------\n";
       cout << "IP Address: ";
       getline(cin, telemetryIP);
@@ -32,13 +32,13 @@ int main() {
       cin >> telemetryPort;
       
       cin.clear();
-      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');*/
+      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-      thread command(commandThread, commandIP, commandPort);
-      //thread telemetry(telemetryThread, telemetryIP, telemetryPort);
+      //thread command(commandThread, commandIP, commandPort);
+      thread telemetry(telemetryThread, telemetryIP, telemetryPort);
 
-      command.join();
-      //telemetry.join();
+      //command.join();
+      telemetry.join();
 
   return 0;
 }
@@ -146,7 +146,7 @@ void commandThread(string ip, int port) {
     //Send DefPkt through socket
     CommandSocket.sendData(pktData, sendPkt.getLength()-1);
     
-    dataSent = 1;
+    dataSent = true;
     
     memset(buff, 0, DATA_BYTE_SIZE);
     CommandSocket.getData(buff);
@@ -179,7 +179,7 @@ void telemetryThread(std::string ipAddress, int port) {
   telemetryClient.connectTCP();
   int dataSize = telemetryClient.getData(dataBuffer);
   
-  if (!dataSent) {
+  if (dataSent) {
     //Display raw data packet
     cout << "Raw data buffer contents: " << dataBuffer << '\n';
 
@@ -188,7 +188,7 @@ void telemetryThread(std::string ipAddress, int port) {
     telemetryPacket.calcCRC();
 
     //CRC check
-    if (telemetryPacket.checkCRC(dataBuffer, dataSize)) {
+    if (telemetryPacket.checkCRC(dataBuffer, 11)) {
       cout << "CRC Check status: OK\n";
 
       //DEBUG ONLY STATUS bit validation. Remove after GM.
@@ -220,7 +220,7 @@ void telemetryThread(std::string ipAddress, int port) {
           }
         } pkt;
 
-        memcpy(&pkt, telemetryPacket.getBodyData(), sizeof(TelemetryData));
+        memcpy(&pkt, telemetryPacket.getBodyData(), 5);
 
         cout << "Sonar Sensor Data: "
           << pkt.sonarSensorData << '\n';
@@ -250,7 +250,7 @@ void telemetryThread(std::string ipAddress, int port) {
       cout << "CRC Check status: FAIL\n";
     }
     
-    dataSent = 0;
+    //dataSent = false;
   }
   
 }
