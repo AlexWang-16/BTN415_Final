@@ -1,9 +1,11 @@
 #ifndef MS3_MAIN
 #define MS3_MAIN
 #define NOMINMAX
+#define RESPONSE_DATA_SIZE 12
 #define _CRT_SECURE_NO_WARNINGS
 #define DATA_BYTE_SIZE 100
 #include <algorithm>
+#include <iomanip>
 #include "../header/library.h"
 #include "../header/MySocket.h"
 
@@ -175,86 +177,99 @@ void commandThread(string ip, int port) {
 
 void telemetryThread(std::string ipAddress, int port) {
   
+  PktDef telemetryPacket;
   char dataBuffer[DATA_BYTE_SIZE];
+  char* readPtr;
   MySocket telemetryClient(SocketType::CLIENT, ipAddress, port, ConnectionType::TCP,
                             DATA_BYTE_SIZE);
 
   telemetryClient.connectTCP();
-  int dataSize = telemetryClient.getData(dataBuffer);
   
-  if (dataSent) {
-    //Display raw data packet
-    cout << "Raw data buffer contents: " << dataBuffer << '\n';
+  while (telemetryPacket.getCmd() != SLEEP) {
+    int dataSize = telemetryClient.getData(dataBuffer);
 
-    //Deserialize telemetry packet
-    PktDef telemetryPacket(dataBuffer);
-    telemetryPacket.calcCRC();
+    readPtr = dataBuffer;
+    if (dataSent) {
+      //Display raw data packet
+      cout << "Raw data buffer contents: ";
 
-    //CRC check
-    if (telemetryPacket.checkCRC(dataBuffer, 11)) {
-      cout << "CRC Check status: OK\n";
+      for (int i = 0; i < RESPONSE_DATA_SIZE; i++) {
+        cout << hex << (unsigned int)dataBuffer[i];
+        
+        if (i == RESPONSE_DATA_SIZE - 1) {
+          cout << endl;
+        }
+        else {
+          cout << ", ";
+        }
+      }
 
-      //DEBUG ONLY STATUS bit validation. Remove after GM.
-      if (telemetryPacket.getCmd() == STATUS) {
-        cout << "Status bit is TRUE\n";
+      //Deserialize telemetry packet
+      telemetryPacket = dataBuffer;
+      telemetryPacket.calcCRC();
+
+      //CRC check
+      if (telemetryPacket.checkCRC(dataBuffer, RESPONSE_DATA_SIZE - 1)) {
+        cout << "CRC Check status: OK\n";
+
+        //DEBUG ONLY STATUS bit validation. Remove after GM.
+        if (telemetryPacket.getCmd() == STATUS) {
+          cout << "Status bit is TRUE\n";
+        }
+        else {
+          cout << "Status bit is FALSE\n";
+        }
+
+        if (telemetryPacket.getLength() > 7
+            && telemetryPacket.getCmd() == STATUS) {
+          //MotorBody data exists. Create a struct and memcpy into the struct
+
+          struct TelemetryData {
+            short sonarSensorData = 0;
+            short armPositionData = 0;
+            unsigned char drive : 1;
+            unsigned char armUp : 1;
+            unsigned char armDown : 1;
+            unsigned char clawOpen : 1;
+            unsigned char clawClosed : 1;
+            unsigned char padding : 3;
+
+            TelemetryData() {
+              padding = 0;
+            }
+          } pkt;
+
+          memcpy(&pkt, telemetryPacket.getBodyData(), 5);
+
+          cout << "Sonar Sensor Data: "
+            << pkt.sonarSensorData << '\n';
+
+          cout << "Arm Position Data: "
+            << pkt.armPositionData << "\n\n";
+
+          cout << "Robot status data\n\n";
+          cout << "Drive: " << static_cast<int>(pkt.drive) << '\n';
+
+          if (pkt.armUp) {
+            cout << "Arm is up, ";
+          }
+          else {
+            cout << "Arm is down, ";
+          }
+
+          if (pkt.clawOpen) {
+            cout << "Claw is Open.\n";
+          }
+          else {
+            cout << "Claw is Closed.\n";
+          }
+        }
       }
       else {
-        cout << "Status bit is FALSE\n";
+        cout << "CRC Check status: FAIL\n";
       }
-
-      //telemetryPacket.getPktCount() == (pktCount + 1) &&
-      if (
-        telemetryPacket.getLength() > 7
-        && telemetryPacket.getCmd() == STATUS) {
-        //MotorBody data exists. Create a struct and memcpy into the struct
-
-        struct TelemetryData {
-          short sonarSensorData = 0;
-          short armPositionData = 0;
-          unsigned char drive : 1;
-          unsigned char armUp : 1;
-          unsigned char armDown : 1;
-          unsigned char clawOpen : 1;
-          unsigned char clawClosed : 1;
-          unsigned char padding : 3;
-
-          TelemetryData() {
-            padding = 0;
-          }
-        } pkt;
-
-        memcpy(&pkt, telemetryPacket.getBodyData(), 5);
-
-        cout << "Sonar Sensor Data: "
-          << pkt.sonarSensorData << '\n';
-
-        cout << "Arm Position Data: "
-          << pkt.armPositionData << "\n\n";
-
-        cout << "Robot status data\n\n";
-        cout << "Drive: " << pkt.drive << '\n';
-
-        if (pkt.armUp) {
-          cout << "Arm is up, ";
-        }
-        else {
-          cout << "Arm is down, ";
-        }
-
-        if (pkt.clawOpen) {
-          cout << "Claw is Open.\n";
-        }
-        else {
-          cout << "Claw is Closed.\n";
-        }
-      }
+      //dataSent = false;
     }
-    else {
-      cout << "CRC Check status: FAIL\n";
-    }
-    
-    //dataSent = false;
   }
-  
 }
 #endif
