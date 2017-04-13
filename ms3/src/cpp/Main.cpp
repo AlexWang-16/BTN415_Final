@@ -1,8 +1,8 @@
 #ifndef MS3_MAIN
 #define MS3_MAIN
 #define NOMINMAX
-#define RESPONSE_DATA_SIZE 12
 #define _CRT_SECURE_NO_WARNINGS
+#define RESPONSE_DATA_SIZE 12
 #define DATA_BYTE_SIZE 100
 #include <algorithm>
 #include <iomanip>
@@ -53,7 +53,7 @@ void commandThread(string ip, int port) {
 
   MotorBody driveData;
   std::string direction;
-  int duration = 0, counter = 0;
+  int duration = 0;
   
   char* pktData = nullptr;
   
@@ -89,7 +89,6 @@ void commandThread(string ip, int port) {
 
       }
 
-      //Set Packet Count
       sendPkt.setPktCount(pktCount + 1);
 
       // Setting command
@@ -136,20 +135,17 @@ void commandThread(string ip, int port) {
         driveData.direction = CLOSE;
       }
 
-      // Set duration
       driveData.duration = duration;
 
-      // Write body data to sendPkt
       sendPkt.setBodyData(reinterpret_cast<char*>(&driveData), 2);
 
-      //Calc CRC
       sendPkt.calcCRC();
 
-      //Generate packet
       pktData = sendPkt.genPacket();
 
-      //Send DefPkt through socket
       CommandSocket.sendData(pktData, sendPkt.getLength() - 1);
+
+      pktData = nullptr;
 
       dataSent = true;
 
@@ -172,7 +168,6 @@ void commandThread(string ip, int port) {
       }
 
       cout << "\nPlease wait, getting telemetry data...\n" << endl;
-      counter++;
       pktCount++;
     }
   }
@@ -182,7 +177,6 @@ void telemetryThread(std::string ipAddress, int port) {
   
   PktDef telemetryPacket;
   char dataBuffer[DATA_BYTE_SIZE];
-  char* readPtr;
   MySocket telemetryClient(SocketType::CLIENT, ipAddress, port, ConnectionType::TCP,
                             DATA_BYTE_SIZE);
 
@@ -191,7 +185,6 @@ void telemetryThread(std::string ipAddress, int port) {
   while (!ExeComplete) {
     int dataSize = telemetryClient.getData(dataBuffer);
 
-    readPtr = dataBuffer;
     if (dataSent) {
       //Display raw data packet
       cout << "Raw data buffer contents: ";
@@ -215,13 +208,6 @@ void telemetryThread(std::string ipAddress, int port) {
       if (telemetryPacket.checkCRC(dataBuffer, RESPONSE_DATA_SIZE - 1)) {
         cout << "CRC Check status: OK\n";
 
-        //DEBUG ONLY STATUS bit validation. Remove after GM.
-        if (telemetryPacket.getCmd() == STATUS) {
-          cout << "Status bit is TRUE\n";
-        }
-        else {
-          cout << "Status bit is FALSE\n";
-        }
 
         if (telemetryPacket.getLength() > 7
             && telemetryPacket.getCmd() == STATUS) {
@@ -273,7 +259,7 @@ void telemetryThread(std::string ipAddress, int port) {
       }
       dataSent = false;
     }
-  }// End of while loop
+  }
 
   telemetryClient.disconnectTCP();
 }
