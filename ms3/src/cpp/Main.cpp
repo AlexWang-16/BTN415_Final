@@ -153,7 +153,10 @@ void commandThread(string ip, int port) {
     CommandSocket.sendData(pktData, sendPkt.getLength());
     
     dataSent = 1;
-
+    
+    memset(buff, 0, DATA_BYTE_SIZE);
+    CommandSocket.getData(buff);
+    
     PktDef responsePkt(buff);
     
     //Check for NACK response, repeat until ACK

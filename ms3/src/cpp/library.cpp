@@ -31,6 +31,7 @@ void PktDef::clearCmd() {
   cmdPacket.header.ack = (char)0;
   cmdPacket.header.padding = (char)0;
 }
+
 void PktDef::copy(char* data) {
   char* ptr = data;
 
