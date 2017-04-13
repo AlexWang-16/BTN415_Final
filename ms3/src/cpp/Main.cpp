@@ -11,13 +11,13 @@
 
 using namespace std;
 
-bool ExeComplete = false, dataSent = true;
+bool ExeComplete = false, dataSent = false;
 int pktCount = 0;
 string commandIP, telemetryIP;
 int commandPort, telemetryPort = 0;
 
 int main() {
-      /*cout << "Command socket connection information\n";
+      cout << "Command socket connection information\n";
       cout << "-------------------------------------\n";
       cout << "IP Address: ";
       getline(cin, commandIP);
@@ -25,7 +25,7 @@ int main() {
       cin >> commandPort;
 
       cin.clear();
-      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');*/
+      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
       cout << "\nTelemetry socket connection information\n";
       cout << "-------------------------------------\n";
@@ -37,10 +37,10 @@ int main() {
       cin.clear();
       cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-      //thread command(commandThread, commandIP, commandPort);
+      thread command(commandThread, commandIP, commandPort);
       thread telemetry(telemetryThread, telemetryIP, telemetryPort);
 
-      //command.join();
+      command.join();
       telemetry.join();
 
   return 0;
@@ -66,113 +66,116 @@ void commandThread(string ip, int port) {
 
   while (!ExeComplete) {
     duration = 0;   //duration will change according to user input each time
+    if (dataSent == false) {    //Wait for telemetryThread to finish printing
+      std::cout << std::endl;
+      std::cout << "Please enter the command: ";
+      getline(std::cin, cmdType);
+      std::transform(cmdType.begin(), cmdType.end(), cmdType.begin(), ::tolower);
 
-    std::cout << std::endl;
-    std::cout << "Please enter the command: ";
-    getline(std::cin, cmdType);
-    std::transform(cmdType.begin(), cmdType.end(), cmdType.begin(), ::tolower);
-    
-    if (cmdType != "sleep") {
-      
-      std::cout << "Please enter the direction: ";
-      getline(std::cin, direction);
-      std::transform(direction.begin(), direction.end(), direction.begin(), ::tolower);
-      
-      if (cmdType == "drive"){
-        std::cout << "Please enter the duration: ";
-        std::cin >> duration;
+      if (cmdType != "sleep") {
+
+        std::cout << "Please enter the direction: ";
+        getline(std::cin, direction);
+        std::transform(direction.begin(), direction.end(), direction.begin(), ::tolower);
+
+        if (cmdType == "drive") {
+          std::cout << "Please enter the duration: ";
+          std::cin >> duration;
+
+        }
+        if (duration > 0) {
+          cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
 
       }
-      if (duration > 0) {
-        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+      //Set Packet Count
+      sendPkt.setPktCount(pktCount + 1);
+
+      // Setting command
+      if (cmdType == "drive") {
+        sendPkt.setCmd(DRIVE);
       }
-      
-    }
-    
-    //Set Packet Count
-    sendPkt.setPktCount(pktCount + 1);
+      else if (cmdType == "status") {
+        sendPkt.setCmd(STATUS);
+      }
+      else if (cmdType == "sleep") {
+        sendPkt.setCmd(SLEEP);
+        ExeComplete = true;   //Use this to defer disconnecting until after sending the pkt
+      }
+      else if (cmdType == "arm") {
+        sendPkt.setCmd(ARM);
+      }
+      else if (cmdType == "claw") {
+        sendPkt.setCmd(CLAW);
+      }
 
-    // Setting command
-    if (cmdType == "drive") {
-      sendPkt.setCmd(DRIVE);
-    }
-    else if (cmdType == "status") {
-      sendPkt.setCmd(STATUS);
-    }
-    else if (cmdType == "sleep") {
-      sendPkt.setCmd(SLEEP);
-      ExeComplete = true;   //Use this to defer disconnecting until after sending the pkt
-    }
-    else if (cmdType == "arm") {
-      sendPkt.setCmd(ARM);
-    }
-    else if (cmdType == "claw") {
-      sendPkt.setCmd(CLAW);
-    }
+      // Setting direction
+      if (direction == "forward") {
+        driveData.direction = FORWARD;
+      }
+      else if (direction == "backward") {
+        driveData.direction = BACKWARD;
+      }
+      else if (direction == "right") {
+        driveData.direction = RIGHT;
+      }
+      else if (direction == "left") {
+        driveData.direction = LEFT;
+      }
+      else if (direction == "up") {
+        driveData.direction = UP;
+      }
+      else if (direction == "down") {
+        driveData.direction = DOWN;
+      }
+      else if (direction == "open") {
+        driveData.direction = OPEN;
+      }
+      else if (direction == "close") {
+        driveData.direction = CLOSE;
+      }
 
-    // Setting direction
-    if (direction == "forward") {
-      driveData.direction = FORWARD;
-    }
-    else if (direction == "backward") {
-      driveData.direction = BACKWARD;
-    }
-    else if (direction == "right") {
-      driveData.direction = RIGHT;
-    }
-    else if (direction == "left") {
-      driveData.direction = LEFT;
-    }
-    else if (direction == "up") {
-      driveData.direction = UP;
-    }
-    else if (direction == "down") {
-      driveData.direction = DOWN;
-    }
-    else if (direction == "open") {
-      driveData.direction = OPEN;
-    }
-    else if (direction == "close") {
-      driveData.direction = CLOSE;
-    }
-    
-    // Set duration
-    driveData.duration = duration;
+      // Set duration
+      driveData.duration = duration;
 
-    // Write body data to sendPkt
-    sendPkt.setBodyData(reinterpret_cast<char*>(&driveData), 2);
+      // Write body data to sendPkt
+      sendPkt.setBodyData(reinterpret_cast<char*>(&driveData), 2);
 
-    //Calc CRC
-    sendPkt.calcCRC();
+      //Calc CRC
+      sendPkt.calcCRC();
 
-    //Generate packet
-    pktData = sendPkt.genPacket();
+      //Generate packet
+      pktData = sendPkt.genPacket();
 
-    //Send DefPkt through socket
-    CommandSocket.sendData(pktData, sendPkt.getLength()-1);
-    
-    dataSent = true;
-    
-    memset(buff, 0, DATA_BYTE_SIZE);
-    CommandSocket.getData(buff);
-    
-    PktDef responsePkt(buff);
-    
-    //Check for NACK response, repeat until ACK
-    while (!responsePkt.getAck()) {
-      this_thread::sleep_for(std::chrono::milliseconds(500));
+      //Send DefPkt through socket
+      CommandSocket.sendData(pktData, sendPkt.getLength() - 1);
+
+      dataSent = true;
+
       memset(buff, 0, DATA_BYTE_SIZE);
-      rxSize = CommandSocket.getData(buff);
-      responsePkt = buff;
-      std::cerr << "Error: CRC check failed. NACK response received.\n";
-    }
+      CommandSocket.getData(buff);
 
-    if (ExeComplete) {
-      CommandSocket.disconnectTCP();
+      PktDef responsePkt(buff);
+
+      //Check for NACK response, repeat until ACK
+      while (!responsePkt.getAck()) {
+        this_thread::sleep_for(std::chrono::milliseconds(500));
+        memset(buff, 0, DATA_BYTE_SIZE);
+        rxSize = CommandSocket.getData(buff);
+        responsePkt = buff;
+        std::cerr << "Error: CRC check failed. NACK response received.\n";
+      }
+
+      if (ExeComplete) {
+        CommandSocket.disconnectTCP();
+      }
+
+      cout << "\nPlease wait, getting telemetry data...\n" << endl;
+      counter++;
+      pktCount++;
     }
-    counter++;
-    pktCount++;
-  } 
+  }
 }
 
 void telemetryThread(std::string ipAddress, int port) {
@@ -185,7 +188,7 @@ void telemetryThread(std::string ipAddress, int port) {
 
   telemetryClient.connectTCP();
   
-  while (telemetryPacket.getCmd() != SLEEP) {
+  while (!ExeComplete) {
     int dataSize = telemetryClient.getData(dataBuffer);
 
     readPtr = dataBuffer;
@@ -242,7 +245,7 @@ void telemetryThread(std::string ipAddress, int port) {
           memcpy(&pkt, telemetryPacket.getBodyData(), 5);
 
           cout << "Sonar Sensor Data: "
-            << pkt.sonarSensorData << '\n';
+            << dec << pkt.sonarSensorData << '\n';
 
           cout << "Arm Position Data: "
             << pkt.armPositionData << "\n\n";
@@ -268,8 +271,10 @@ void telemetryThread(std::string ipAddress, int port) {
       else {
         cout << "CRC Check status: FAIL\n";
       }
-      //dataSent = false;
+      dataSent = false;
     }
-  }
+  }// End of while loop
+
+  telemetryClient.disconnectTCP();
 }
 #endif
