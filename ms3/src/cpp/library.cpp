@@ -55,6 +55,7 @@ void PktDef::copy(char* data) {
   cmdPacket.CRC = *ptr;
 }
 void PktDef::setCmd(CmdType type) {
+  clearCmd();
 	switch (type) {
 	case DRIVE:
 		cmdPacket.header.drive = 1;

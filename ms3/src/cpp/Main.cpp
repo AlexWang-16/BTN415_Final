@@ -45,13 +45,12 @@ int main() {
 
 void commandThread(string ip, int port) {
   
-  
   PktDef sendPkt;
   std::string cmdType;
 
   MotorBody driveData;
   std::string direction;
-  int duration = 0;
+  int duration = 0, counter = 0;
   
   char* pktData = nullptr;
   
@@ -65,16 +64,23 @@ void commandThread(string ip, int port) {
   while (!ExeComplete) {
     duration = 0;   //duration will change according to user input each time
 
+    if (counter > 0) {
+      cin.clear();
+      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+    
     std::cout << "Please enter the command: ";
     getline(std::cin, cmdType);
     
     if (cmdType != "sleep") {
       std::cout << "Please enter the direction: ";
-      std::cin >> direction;
+
+      getline(std::cin, direction);
       
       if (cmdType == "drive"){
         std::cout << "Please enter the duration: ";
         std::cin >> duration;
+
       }
     }
     
@@ -126,9 +132,7 @@ void commandThread(string ip, int port) {
     }
     
     // Set duration
-    if (duration > 0) {
-      driveData.duration = duration;
-    }
+    driveData.duration = duration;
 
     // Write body data to sendPkt
     sendPkt.setBodyData(reinterpret_cast<char*>(&driveData), 2);
@@ -138,16 +142,6 @@ void commandThread(string ip, int port) {
 
     //Generate packet
     pktData = sendPkt.genPacket();
-
-   /* PktDef test(pktData);
-    std::cout << "PktCount: " << test.getPktCount() << '\n';
-    std::cout << "Command: " << test.getCmd() << '\n';
-    std::cout << "Length: " << test.getLength() << '\n';
-    char* testPtr = test.getBodyData();
-    std::cout << "Body data 1: " << static_cast<int>(*test.getBodyData()) << '\n';
-    std::cout << "Body data 1: " << static_cast<int>(*(test.getBodyData() + 1)) << '\n';*/
-    
-    //this_thread::sleep_for(std::chrono::milliseconds(1000000));
 
     //Send DefPkt through socket
     CommandSocket.sendData(pktData, sendPkt.getLength()-1);
@@ -172,6 +166,8 @@ void commandThread(string ip, int port) {
       CommandSocket.disconnectTCP();
     }
 
+    counter++;
+    pktCount++;
   } 
 }
 
