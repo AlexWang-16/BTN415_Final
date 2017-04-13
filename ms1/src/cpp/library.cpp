@@ -31,6 +31,7 @@ void PktDef::clearCmd() {
   cmdPacket.header.ack = (char)0;
   cmdPacket.header.padding = (char)0;
 }
+
 void PktDef::copy(char* data) {
   char* ptr = data;
 
@@ -54,6 +55,7 @@ void PktDef::copy(char* data) {
   cmdPacket.CRC = *ptr;
 }
 void PktDef::setCmd(CmdType type) {
+  clearCmd();
   switch (type) {
   case DRIVE:
     cmdPacket.header.drive = 1;
@@ -85,19 +87,19 @@ void PktDef::setPktCount(int countNumber) {
 }
 
 CmdType PktDef::getCmd() {
-  if (cmdPacket.header.drive & 1) {
+  if (cmdPacket.header.drive) {
     return DRIVE;
   }
-  else if (cmdPacket.header.status & 1) {
+  else if (cmdPacket.header.status) {
     return STATUS;
   }
-  else if (cmdPacket.header.sleep & 1) {
+  else if (cmdPacket.header.sleep) {
     return SLEEP;
   }
-  else if (cmdPacket.header.arm & 1) {
+  else if (cmdPacket.header.arm) {
     return ARM;
   }
-  else if (cmdPacket.header.claw & 1) {
+  else if (cmdPacket.header.claw) {
     return CLAW;
   }
 }

@@ -16,56 +16,57 @@ const int DEFAULT_SIZE = 128;
 class MySocket {
 
 protected:
-	int version_num1, version_num2;
-	int port;
-	std::string IPAddr;
-	WSADATA wsa_data;
-	char *Buffer;
+  int version_num1, version_num2;
+  int port;
+  std::string IPAddr;
+  WSADATA wsa_data;
+  char *Buffer;
 
-	SOCKET WelcomeSocket, ConnectionSocket;
+  SOCKET welcomeSocket, connectionSocket;
 
-	struct sockaddr_in SvrAddr;
+  struct sockaddr_in svrAddr;
 
-	SocketType mySocket;
-	ConnectionType connectionType;
+  SocketType mySocket;
+  ConnectionType connectionType;
 
-	bool bTCPConnect = false;		//True if connection is established
+  bool bTCPConnect = false;		//True if connection is established
 
-	int MaxSize;
+  int maxSize;
 
 public:
-	//constructor and destructor
+  //constructor and destructor
   MySocket(SocketType socketType, std::string ipAddress,
     unsigned int portNumber, ConnectionType connectionType,
     unsigned int bufferSize);
-	~MySocket();
+  ~MySocket();
 
-	//getter functions
-	int GetPort();
-	std::string GetIPAddr();
-	SocketType GetType();
-	ConnectionType GetConnectionType();
-	
-	//setter functions
-	void SetIPAddr(std::string ipAddress);
-	void SetPort(int portNumber);
-	void SetType(SocketType socketType);
+  //getter functions
+  int getPort();
+  std::string getIPAddr();
+  SocketType getType();
+  ConnectionType getConnectionType();
 
-	//socket functions
-	void start_DLLS();
-	SOCKET initialize_tcp_socket();
-	SOCKET initialize_udp_socket();
-	void bind_socket();
-	void listen_socket();
-	void accept_connection();
+  //setter functions
+  void setIPAddr(std::string ipAddress);
+  void setPort(int portNumber);
+  void setType(SocketType socketType);
 
-	//connection and transmission functions
-	void ConnectTCP();
-	void DisconnectTCP();
-	int GetData(char* recvBuffer);
-	void SendData(const char* data, int dataSize);
+  //socket functions
+  void start_DLLS();
+  SOCKET initializeTcpSocket();
+  SOCKET initializeUdpSocket();
+  void bindSocket();
+  void listenSocket();
+  void acceptConnection();
+
+  //connection and transmission functions
+  void connectTCP();
+  void disconnectTCP();
+  int getData(char* recvBuffer);
+  void sendData(const char* data, int dataSize);
 
 };
 
-
+void commandThread(std::string ip, int port);
+void telemetryThread(std::string ipAddress, int port);
 #endif MYSOCKET_H

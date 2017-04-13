@@ -64,10 +64,8 @@ void commandThread(string ip, int port) {
   while (!ExeComplete) {
     duration = 0;   //duration will change according to user input each time
 
-    if (counter > 0) {
-      cin.clear();
-      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
+    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
     
     std::cout << "Please enter the command: ";
     getline(std::cin, cmdType);
@@ -168,6 +166,7 @@ void commandThread(string ip, int port) {
 
     counter++;
     pktCount++;
+    std::cout << std::endl;
   } 
 }
 
