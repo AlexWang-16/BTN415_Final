@@ -64,15 +64,13 @@ void commandThread(string ip, int port) {
   while (!ExeComplete) {
     duration = 0;   //duration will change according to user input each time
 
-    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-    
+    std::cout << std::endl;
     std::cout << "Please enter the command: ";
     getline(std::cin, cmdType);
     
     if (cmdType != "sleep") {
+      
       std::cout << "Please enter the direction: ";
-
       getline(std::cin, direction);
       
       if (cmdType == "drive"){
@@ -80,6 +78,10 @@ void commandThread(string ip, int port) {
         std::cin >> duration;
 
       }
+      if (duration > 0) {
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      }
+      
     }
     
     //Set Packet Count
@@ -163,10 +165,8 @@ void commandThread(string ip, int port) {
     if (ExeComplete) {
       CommandSocket.disconnectTCP();
     }
-
     counter++;
     pktCount++;
-    std::cout << std::endl;
   } 
 }
 
@@ -249,6 +249,7 @@ void telemetryThread(std::string ipAddress, int port) {
     else {
       cout << "CRC Check status: FAIL\n";
     }
+    
     dataSent = 0;
   }
   
