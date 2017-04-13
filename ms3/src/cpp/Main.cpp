@@ -15,7 +15,7 @@ string commandIP, telemetryIP;
 int commandPort, telemetryPort = 0;
 
 int main() {
-      cout << "Command socket connection information\n";
+      /*cout << "Command socket connection information\n";
       cout << "-------------------------------------\n";
       cout << "IP Address: ";
       getline(cin, commandIP);
@@ -23,9 +23,9 @@ int main() {
       cin >> commandPort;
 
       cin.clear();
-      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');*/
 
-      /*cout << "\nTelemetry socket connection information\n";
+      cout << "\nTelemetry socket connection information\n";
       cout << "-------------------------------------\n";
       cout << "IP Address: ";
       getline(cin, telemetryIP);
@@ -33,13 +33,13 @@ int main() {
       cin >> telemetryPort;
       
       cin.clear();
-      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');*/
+      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-      thread command(commandThread, commandIP, commandPort);
-      //thread telemetry(telemetryThread, telemetryIP, telemetryPort);
+      //thread command(commandThread, commandIP, commandPort);
+      thread telemetry(telemetryThread, telemetryIP, telemetryPort);
 
-      command.join();
-      //telemetry.join();
+      //command.join();
+      telemetry.join();
 
   return 0;
 }
@@ -202,9 +202,9 @@ void telemetryThread(std::string ipAddress, int port) {
         cout << "Status bit is FALSE\n";
       }
 
-
-      if (telemetryPacket.getPktCount() == (pktCount + 1)
-        && telemetryPacket.getLength() > 7
+      //telemetryPacket.getPktCount() == (pktCount + 1) &&
+      if (
+        telemetryPacket.getLength() > 7
         && telemetryPacket.getCmd() == STATUS) {
         //MotorBody data exists. Create a struct and memcpy into the struct
 
