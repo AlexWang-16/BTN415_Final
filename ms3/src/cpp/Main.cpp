@@ -150,7 +150,7 @@ void commandThread(string ip, int port) {
     //this_thread::sleep_for(std::chrono::milliseconds(1000000));
 
     //Send DefPkt through socket
-    CommandSocket.sendData(pktData, sendPkt.getLength());
+    CommandSocket.sendData(pktData, sendPkt.getLength()-1);
     
     dataSent = 1;
     
