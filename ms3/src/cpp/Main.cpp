@@ -3,6 +3,7 @@
 #define NOMINMAX
 #define _CRT_SECURE_NO_WARNINGS
 #define DATA_BYTE_SIZE 100
+#include <algorithm>
 #include "../header/library.h"
 #include "../header/MySocket.h"
 
@@ -14,7 +15,7 @@ string commandIP, telemetryIP;
 int commandPort, telemetryPort = 0;
 
 int main() {
-      /*cout << "Command socket connection information\n";
+      cout << "Command socket connection information\n";
       cout << "-------------------------------------\n";
       cout << "IP Address: ";
       getline(cin, commandIP);
@@ -22,9 +23,9 @@ int main() {
       cin >> commandPort;
 
       cin.clear();
-      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');*/
+      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-      cout << "\nTelemetry socket connection information\n";
+      /*cout << "\nTelemetry socket connection information\n";
       cout << "-------------------------------------\n";
       cout << "IP Address: ";
       getline(cin, telemetryIP);
@@ -32,13 +33,13 @@ int main() {
       cin >> telemetryPort;
       
       cin.clear();
-      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');*/
 
-      //thread command(commandThread, commandIP, commandPort);
-      thread telemetry(telemetryThread, telemetryIP, telemetryPort);
+      thread command(commandThread, commandIP, commandPort);
+      //thread telemetry(telemetryThread, telemetryIP, telemetryPort);
 
-      //command.join();
-      telemetry.join();
+      command.join();
+      //telemetry.join();
 
   return 0;
 }
@@ -67,11 +68,13 @@ void commandThread(string ip, int port) {
     std::cout << std::endl;
     std::cout << "Please enter the command: ";
     getline(std::cin, cmdType);
+    std::transform(cmdType.begin(), cmdType.end(), cmdType.begin(), ::tolower);
     
     if (cmdType != "sleep") {
       
       std::cout << "Please enter the direction: ";
       getline(std::cin, direction);
+      std::transform(direction.begin(), direction.end(), direction.begin(), ::tolower);
       
       if (cmdType == "drive"){
         std::cout << "Please enter the duration: ";
