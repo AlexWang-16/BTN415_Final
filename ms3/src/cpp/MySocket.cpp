@@ -11,7 +11,7 @@ MySocket::MySocket(SocketType socketType, std::string ipAddress, unsigned int po
   setPort(portNumber);
   this->connectionType = connectionType;
 
-  if (0 < bufferSize && bufferSize <= std::numeric_limits<int>::max()) {
+  if (0 < bufferSize && bufferSize <= std::numeric_limits<unsigned int>::max()) {
     Buffer = new char[bufferSize];
     this->maxSize = bufferSize;
   }

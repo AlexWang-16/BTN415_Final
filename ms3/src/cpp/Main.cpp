@@ -125,6 +125,11 @@ void commandThread(string ip, int port) {
       driveData.direction = CLOSE;
     }
     
+    // Set duration
+    if (duration > 0) {
+      driveData.duration = duration;
+    }
+
     // Write body data to sendPkt
     sendPkt.setBodyData(reinterpret_cast<char*>(&driveData), 2);
 
@@ -134,13 +139,16 @@ void commandThread(string ip, int port) {
     //Generate packet
     pktData = sendPkt.genPacket();
 
-    /*PktDef test(pktData);
+   /* PktDef test(pktData);
     std::cout << "PktCount: " << test.getPktCount() << '\n';
     std::cout << "Command: " << test.getCmd() << '\n';
     std::cout << "Length: " << test.getLength() << '\n';
-    std::cout << "Bo  dy data: " << *test.getBodyData() << '\n';*/
+    char* testPtr = test.getBodyData();
+    std::cout << "Body data 1: " << static_cast<int>(*test.getBodyData()) << '\n';
+    std::cout << "Body data 1: " << static_cast<int>(*(test.getBodyData() + 1)) << '\n';*/
     
     //this_thread::sleep_for(std::chrono::milliseconds(1000000));
+
     //Send DefPkt through socket
     CommandSocket.sendData(pktData, sendPkt.getLength());
     
