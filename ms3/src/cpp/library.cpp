@@ -165,7 +165,7 @@ void PktDef::calcCRC() {
 char* PktDef::genPacket(){
 	//Creates a RawBuffer in the heap and serialize data
 	//Return address to RawBuffer
-	
+
 	int bufferHeader = 0;	//Buffer header location tracker
 	int bodySize = this->getLength() - HEADERSIZE - sizeof(cmdPacket.CRC);
 	char* rawBuffer = new char[cmdPacket.header.length];
