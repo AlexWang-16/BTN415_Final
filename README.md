@@ -1,5 +1,5 @@
-# BTN415_Final
-BTN415 Data Communications Final Project at Seneca College (Semester 4)
+# Robo Command
+BTN415 Data Communications Final Project at Seneca College (Semester 4). This purpose of this project is to create an app that allows the user to send instructions over wifi to instruct a robot to navigate an obstacle course.
 
 **Project Team members**:
 Alex Wang,
