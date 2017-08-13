@@ -25,4 +25,4 @@ The syntax is: `simulator.exe <IP Address> <Port for Command> <Port for Telemtry
 
 ## Screenshot
 
-![alt text](screenshots/1.png "Claw open!")
+![alt text]( screenshots/1.png "Claw open!")
