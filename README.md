@@ -1,5 +1,5 @@
 # Robo Command
-BTN415 Data Communications Final Project at Seneca College (Semester 4). This purpose of this project is to create an app that allows the user to send instructions over wifi to instruct a robot to navigate an obstacle course.
+This purpose of this project is to create an app that allows the user to send instructions over wifi to instruct a robot to navigate an obstacle course.
 
 **Project Team members**:
 Alex Wang,
@@ -22,3 +22,7 @@ If you wish to change the IP address, and port numbers, you will need to specify
 them at launch via command prompt
 
 The syntax is: `simulator.exe <IP Address> <Port for Command> <Port for Telemtry>`
+
+## Screenshot
+
+![alt text](screenshots/1.png "Claw up!")
