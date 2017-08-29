@@ -1,4 +1,4 @@
-# Robo Command
+# Robot Command
 This purpose of this project is to create an app that allows the user to send instructions over wifi to instruct a robot to navigate an obstacle course.
 
 **Project Team members**:
@@ -26,3 +26,7 @@ The syntax is: `simulator.exe <IP Address> <Port for Command> <Port for Telemtry
 ## Screenshot
 
 ![alt text](screenshots/1.png "Claw open!")
+
+## Video
+
+![alt text](https://github.com/AlexWang-16/robot-command "Click to view demo video")(https://youtu.be/G-n5Aqq7Crk)
