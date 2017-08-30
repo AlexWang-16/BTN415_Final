@@ -28,4 +28,4 @@ The syntax is: `simulator.exe <IP Address> <Port for Command> <Port for Telemtry
 ![alt text](screenshots/1.png "Claw open!")
 
 ## Video
-![alt text](https://youtu.be/G-n5Aqq7Crk)(https://youtu.be/G-n5Aqq7Crk)
+[![alt text](http://i40.photobucket.com/albums/e250/md2k6/Github/IMG_6121_zpsozdy3ka3.jpg "Click to watch demo video")](https://youtu.be/G-n5Aqq7Crk)
