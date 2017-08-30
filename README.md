@@ -29,4 +29,4 @@ The syntax is: `simulator.exe <IP Address> <Port for Command> <Port for Telemtry
 
 ## Video
 
-![[alt text](https://github.com/AlexWang-16/robot-command "click to watch demo video")](https://youtu.be/G-n5Aqq7Crk)
+![[alt text]("click to watch demo video" "click to watch demo video")](https://youtu.be/G-n5Aqq7Crk)
