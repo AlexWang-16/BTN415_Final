@@ -1,5 +1,5 @@
 # Robot Command
-This purpose of this project is to create an app that allows the user to send instructions over wifi to instruct a robot to navigate an obstacle course.
+This app is a 4th semester project for data communications course at Seneca College. It allows the user to send instructions over wifi using TCP/IP protocol to instruct a robot to navigate an obstacle course. The robot and its software was provided by Dr.Elliot Coleshill.
 
 **Project Team members**:
 Alex Wang,
