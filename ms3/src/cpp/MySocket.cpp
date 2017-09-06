@@ -237,7 +237,7 @@ void MySocket::bindSocket()
   svrAddr.sin_port = htons(this->getPort()); //port (host to network conversion)
   svrAddr.sin_addr.s_addr = inet_addr(this->getIPAddr().c_str()); //IP address
   if ((bind(this->welcomeSocket, (struct sockaddr *)&svrAddr, sizeof(svrAddr)))
-    == SOCKET_ERROR) {
+    == SOCKET_ERROR) { //welcomeSocket is server's socket used to generate a connection socket for a client. Bind() maps it to the server's current IP Address. It is a single non-live socket.
     closesocket(this->welcomeSocket);
     WSACleanup();
     std::cout << "Could not bind to the socket" << std::endl;
@@ -262,6 +262,7 @@ void MySocket::listenSocket()
 }
 
 void MySocket::acceptConnection() {
+  //connectionSocket is a single live connection between the server and a particular client. A server may have multiple connectionSockets.
   if ((this->connectionSocket = accept(this->welcomeSocket, NULL, NULL)) == SOCKET_ERROR) {
     closesocket(this->welcomeSocket);
     WSACleanup();
